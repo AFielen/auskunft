@@ -9,19 +9,23 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="de">
-      <body className="bg-gray-50 min-h-screen">
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
-          <div className="max-w-3xl mx-auto flex items-center gap-3">
-            <div className="text-red-600 font-bold text-xl">✚</div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">DRK Selbstauskunft</h1>
-              <p className="text-xs text-gray-500">Deutsches Rotes Kreuz — Städteregion Aachen</p>
-            </div>
+      <body className="min-h-screen flex flex-col">
+        <header
+          style={{ background: "var(--drk)", color: "var(--white)" }}
+          className="px-4 py-3 flex items-center gap-3"
+        >
+          <img src="/logo.png" alt="DRK Logo" width={42} height={42} />
+          <div>
+            <h1 className="text-xl font-bold leading-tight">DRK Selbstauskunft</h1>
+            <div className="text-xs opacity-85">Digitale Compliance-Erklärung</div>
           </div>
         </header>
-        <main className="max-w-3xl mx-auto px-4 py-8">
+        <main className="flex-1 w-full max-w-[900px] mx-auto px-4 py-6">
           {children}
         </main>
+        <footer className="text-center text-xs py-4" style={{ color: "var(--text-light)" }}>
+          DRK Selbstauskunft — Deutsches Rotes Kreuz
+        </footer>
       </body>
     </html>
   );
