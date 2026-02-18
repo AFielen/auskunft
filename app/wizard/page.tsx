@@ -379,9 +379,96 @@ function WizardContent() {
           </ol>
         </div>
 
+        {/* Donation */}
+        <div className="fade-up fade-up-delay-3" style={{ ...card, padding: "24px", marginTop: "16px", textAlign: "center" }}>
+          <h3 className="font-bold text-sm mb-2" style={{ color: "var(--text)" }}>Weiterentwicklung unterstützen</h3>
+          <p className="text-xs leading-relaxed mb-1" style={{ color: "var(--text-light)" }}>
+            Diese Anwendung ist Open Source und kostenfrei für alle DRK-Gliederungen.
+            Wenn Ihnen das Tool geholfen hat, freuen wir uns über einen kleinen Beitrag.
+          </p>
+          <div className="donation-amounts">
+            <a
+              href="https://www.paypal.com/donate/?business=DEINE_PAYPAL_ID&amount=15&currency_code=EUR&item_name=DRK+Selbstauskunft"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="donation-btn"
+            >
+              <span className="amount">15 €</span>
+              <span className="label">Danke!</span>
+            </a>
+            <a
+              href="https://www.paypal.com/donate/?business=DEINE_PAYPAL_ID&amount=25&currency_code=EUR&item_name=DRK+Selbstauskunft"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="donation-btn"
+            >
+              <span className="amount">25 €</span>
+              <span className="label">Klasse!</span>
+            </a>
+            <a
+              href="https://www.paypal.com/donate/?business=DEINE_PAYPAL_ID&amount=50&currency_code=EUR&item_name=DRK+Selbstauskunft"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="donation-btn"
+            >
+              <span className="amount">50 €</span>
+              <span className="label">Großartig!</span>
+            </a>
+          </div>
+          <p className="text-xs" style={{ color: "var(--text-light)" }}>
+            Spenden fließen in Hosting, Weiterentwicklung und Barrierefreiheit.
+          </p>
+        </div>
+
+        {/* Weitere Angebote */}
+        <div className="fade-up fade-up-delay-4" style={{ ...card, padding: "24px", marginTop: "16px" }}>
+          <h3 className="font-bold text-sm mb-1" style={{ color: "var(--text)" }}>Was wir sonst noch entwickeln</h3>
+          <p className="text-xs mb-4" style={{ color: "var(--text-light)" }}>
+            Datensparsame, Open-Source-Werkzeuge für die Vereins- und Verbandsarbeit.
+          </p>
+          <div className="offer-cards">
+            <a href="https://github.com/AFielen/drk" target="_blank" rel="noopener noreferrer" className="offer-card">
+              <div className="offer-icon" style={{ background: "#fce4ec", color: "var(--drk)" }}>🗳️</div>
+              <div>
+                <h4 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  DRK Vereinsabstimmung
+                  <span className="offer-badge live">Live</span>
+                </h4>
+                <p className="text-xs mt-1" style={{ color: "var(--text-light)" }}>
+                  Digitales Abstimmungssystem für Mitgliederversammlungen — live, anonym und DSGVO-konform.
+                </p>
+              </div>
+            </a>
+            <a href="#" className="offer-card">
+              <div className="offer-icon" style={{ background: "#e3f2fd", color: "#1976d2" }}>🤖</div>
+              <div>
+                <h4 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  HenryGPT
+                  <span className="offer-badge soon">In Entwicklung</span>
+                </h4>
+                <p className="text-xs mt-1" style={{ color: "var(--text-light)" }}>
+                  Intelligenter KI-Assistent speziell für das DRK — DSGVO-konform in eigener Umgebung.
+                </p>
+              </div>
+            </a>
+            <a href="#" className="offer-card">
+              <div className="offer-icon" style={{ background: "#f3e5f5", color: "#7b1fa2" }}>📋</div>
+              <div>
+                <h4 className="text-sm font-semibold" style={{ color: "var(--text)" }}>
+                  Digitale Gremienarbeit
+                  <span className="offer-badge soon">In Entwicklung</span>
+                </h4>
+                <p className="text-xs mt-1" style={{ color: "var(--text-light)" }}>
+                  Sitzungsmanagement, Beschlussdokumentation und Protokollführung — serverlos und datenschutzkonform.
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+
         {/* Privacy note */}
         <div
-          className="fade-up fade-up-delay-3 rounded-[10px] p-4 text-center"
+          className="fade-up fade-up-delay-5 rounded-[10px] p-4 text-center"
           style={{ background: "#f0f7ff", border: "1px solid #c5ddf5", marginTop: "16px" }}
         >
           <p className="text-xs" style={{ color: "var(--text-light)" }}>
@@ -390,7 +477,7 @@ function WizardContent() {
         </div>
 
         {/* Restart */}
-        <div className="fade-up fade-up-delay-4 text-center" style={{ marginTop: "16px" }}>
+        <div className="fade-up fade-up-delay-6 text-center" style={{ marginTop: "16px" }}>
           <a
             href="/"
             className="text-sm font-medium"
