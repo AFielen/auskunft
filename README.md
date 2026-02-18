@@ -20,6 +20,7 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 - **Flexibles Reporting** — Wählen Sie selbst, an wen Sie berichten
 - **Abweichungen dokumentieren** — Bei "Nein" oder "Teilweise" wird automatisch eine Begründung verlangt
 - **PDF-Report** — Vollständiger Bericht mit DRK-Branding, Unterschriftszeile und Zusammenfassung
+- **QR-Code im Report** — Jeder Report enthält einen QR-Code mit komprimierten Formulardaten. Scannen füllt die Selbstauskunft für das nächste Jahr automatisch vor — das PDF wird zur "Offline-Datenbank"
 - **Zwischenspeichern** — Fortschritt wird im Browser gespeichert (localStorage)
 - **Exit-Guard** — Warnung beim versehentlichen Schließen des Tabs
 - **Mobile-optimiert** — Responsive Design mit Bottom-Sheet-Hilfe auf dem Handy
@@ -84,6 +85,9 @@ auskunft/
 │   └── datenschutz/page.tsx
 ├── lib/
 │   ├── questions.ts            # Fragen, Abschnitte, Rollen
+│   ├── report.ts               # Shared Report-Generierung (HTML + QR)
+│   ├── state-codec.ts          # State komprimieren/dekomprimieren (lz-string)
+│   ├── qr-svg.ts               # QR-Code SVG-Generierung
 │   ├── styles.ts               # Shared Styles
 │   └── version.ts              # Versionierung
 ├── public/
@@ -101,6 +105,7 @@ auskunft/
 - **Keine externen Dienste** — Keine Google Fonts, kein CDN
 - **localStorage nur lokal** — Wird bei Abgabe automatisch gelöscht
 - **XSS-Schutz** — HTML-Escaping aller Benutzereingaben in der PDF-Generierung
+- **QR-Code = nur komprimierte Daten** — Der QR-Code enthält die Formulardaten als komprimierten String (lz-string). Kein Server, kein Token, keine Datenbank — die Daten reisen mit dem Dokument
 - **DSGVO-konform** — Keine serverseitige Verarbeitung personenbezogener Daten
 
 ## 🤝 Beitragen

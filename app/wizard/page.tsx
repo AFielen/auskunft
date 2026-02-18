@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { sections } from "@/lib/questions";
 import { card } from "@/lib/styles";
 import { generateReportHtml } from "@/lib/report";
+import { encodeState } from "@/lib/state-codec";
 
 type ConfirmValue = "ja" | "nein" | "teilweise" | undefined;
 type Answers = Record<string, ConfirmValue | string | number>;
@@ -162,10 +163,25 @@ function WizardContent() {
   }, 0);
 
   const handlePrint = useCallback(() => {
+    // Build state URL with compressed form data for QR code
+    const state = encodeState({
+      name: userName,
+      role: userRole,
+      gliederung,
+      reportTo,
+      aufsichtName,
+      geschaeftsjahr,
+      ort: signOrt,
+      answers,
+      deviations,
+    });
+    const stateUrl = `${window.location.origin}/?state=${state}`;
+
     const html = generateReportHtml(
       { name: userName, role: userRole, gliederung, reportTo, aufsichtName, geschaeftsjahr, ort: signOrt },
       answers,
-      deviations
+      deviations,
+      stateUrl
     );
     const w = window.open("", "_blank");
     if (w) {

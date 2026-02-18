@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { roles, reportTargets } from "@/lib/questions";
 import { card } from "@/lib/styles";
 import { APP_VERSION, APP_DATE } from "@/lib/version";
+import { decodeState } from "@/lib/state-codec";
 
 export default function Home() {
   const router = useRouter();
@@ -17,6 +18,53 @@ export default function Home() {
   const [gliederung, setGliederung] = useState("");
   const [aufsichtName, setAufsichtName] = useState("");
   const [geschaeftsjahr, setGeschaeftsjahr] = useState((new Date().getFullYear() - 1).toString());
+  const [restoredFromQr, setRestoredFromQr] = useState(false);
+
+  // Restore state from QR code URL (?state=...)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const stateParam = params.get("state");
+    if (!stateParam) return;
+
+    const restored = decodeState(stateParam);
+    if (!restored) return;
+
+    // Pre-fill person fields
+    setName(restored.name);
+    setGliederung(restored.gliederung);
+    setAufsichtName(restored.aufsichtName);
+    setGeschaeftsjahr(restored.geschaeftsjahr);
+
+    // Role: check if it matches a predefined role, otherwise use "Sonstiges"
+    if (roles.includes(restored.role)) {
+      setRole(restored.role);
+    } else if (restored.role) {
+      setRole("Sonstiges");
+      setRoleCustom(restored.role);
+    }
+
+    // ReportTo: same logic
+    if (reportTargets.includes(restored.reportTo)) {
+      setReportTo(restored.reportTo);
+    } else if (restored.reportTo) {
+      setReportTo("Sonstiges");
+      setReportToCustom(restored.reportTo);
+    }
+
+    // Save answers + deviations to localStorage for the wizard to pick up
+    localStorage.setItem("drk-selbstauskunft-draft", JSON.stringify({
+      step: 0,
+      answers: restored.answers,
+      deviations: restored.deviations,
+      signOrt: restored.ort,
+    }));
+
+    setRestoredFromQr(true);
+    setStep("setup");
+
+    // Clean URL without reload
+    window.history.replaceState({}, "", "/");
+  }, []);
 
   const gjNum = parseInt(geschaeftsjahr);
   const gjValid = /^\d{4}$/.test(geschaeftsjahr) && gjNum >= 2000 && gjNum <= new Date().getFullYear();
@@ -109,6 +157,18 @@ export default function Home() {
         <p className="text-sm mb-5" style={{ color: "var(--text-light)" }}>
           Bitte geben Sie Ihre Daten und die Ihres Aufsichtsorgans ein.
         </p>
+
+        {restoredFromQr && (
+          <div className="rounded-[10px] p-4 mb-5" style={{ background: "#e8f5e9", border: "1px solid var(--success)" }}>
+            <p className="text-sm font-semibold" style={{ color: "var(--success)" }}>
+              Daten aus QR-Code wiederhergestellt
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-light)" }}>
+              Ihre Angaben aus der letzten Selbstauskunft wurden vorausgefüllt.
+              Bitte prüfen Sie die Daten und passen Sie ggf. das Geschäftsjahr an.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-4">
           {/* Geschäftsjahr */}

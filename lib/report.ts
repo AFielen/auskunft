@@ -1,4 +1,5 @@
 import { sections } from "@/lib/questions";
+import { generateQrSvg } from "@/lib/qr-svg";
 
 export interface ReportParams {
   name: string;
@@ -62,11 +63,13 @@ export function validateAnswers(answers: ReportAnswers): string[] {
 
 /**
  * Generate the HTML report used for both the browser print view and the API response.
+ * If stateUrl is provided, a QR code linking to the pre-filled form is included.
  */
 export function generateReportHtml(
   params: ReportParams,
   answers: ReportAnswers,
-  deviations: ReportDeviations
+  deviations: ReportDeviations,
+  stateUrl?: string
 ): string {
   const date = new Date().toLocaleDateString("de-DE");
 
@@ -108,6 +111,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 .danke h2 { color: #e30613; font-size: 14pt; margin-bottom: 8px; }
 .danke p { font-size: 10pt; color: #777; }
 .footer { margin-top: 20px; text-align: center; font-size: 8pt; color: #999; }
+.qr-section { margin-top: 24px; padding: 16px; border: 1px solid #e0e0e0; border-radius: 8px; display: flex; align-items: center; gap: 16px; page-break-inside: avoid; }
+.qr-section svg { flex-shrink: 0; }
+.qr-section .qr-text { font-size: 8pt; color: #777; line-height: 1.5; }
+.qr-section .qr-text strong { color: #2a2a2a; font-size: 9pt; }
 </style></head><body>`;
 
   html += `<div class="header">
@@ -165,6 +172,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
     <p>Ihre Selbstauskunft für das Geschäftsjahr ${escapeHtml(params.geschaeftsjahr)} wurde vollständig ausgefüllt.</p>
     <p style="margin-top:8px">Bitte leiten Sie dieses Dokument an Ihr Aufsichtsorgan weiter.</p>
   </div>`;
+
+  if (stateUrl) {
+    const qrSvg = generateQrSvg(stateUrl, 100);
+    html += `<div class="qr-section">
+      ${qrSvg}
+      <div class="qr-text">
+        <strong>QR-Code: Selbstauskunft wiederherstellen</strong><br>
+        Scannen Sie diesen Code, um die Selbstauskunft mit den aktuellen Angaben
+        vorauszufüllen — z.B. als Vorlage für das nächste Geschäftsjahr.<br>
+        Persönliche Daten und Antworten sind komprimiert im Code enthalten.
+        Es werden keine Daten auf einem Server gespeichert.
+      </div>
+    </div>`;
+  }
 
   html += `<div class="footer">DRK Selbstauskunft — Deutsches Rotes Kreuz · ${escapeHtml(params.gliederung)}</div>`;
   html += `</body></html>`;
