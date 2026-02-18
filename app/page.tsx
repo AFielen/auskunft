@@ -16,12 +16,15 @@ export default function Home() {
   const [name, setName] = useState("");
   const [gliederung, setGliederung] = useState("");
   const [aufsichtName, setAufsichtName] = useState("");
-  const [geschaeftsjahr, setGeschaeftsjahr] = useState(new Date().getFullYear().toString());
+  const [geschaeftsjahr, setGeschaeftsjahr] = useState((new Date().getFullYear() - 1).toString());
+
+  const gjNum = parseInt(geschaeftsjahr);
+  const gjValid = /^\d{4}$/.test(geschaeftsjahr) && gjNum >= 2000 && gjNum <= new Date().getFullYear();
 
   const canStart =
-    (role && (role !== "Sonstiges" || roleCustom)) &&
-    (reportTo && (reportTo !== "Sonstiges" || reportToCustom)) &&
-    name && gliederung && aufsichtName && geschaeftsjahr;
+    (role && (role !== "Sonstiges" || roleCustom.trim().length >= 2)) &&
+    (reportTo && (reportTo !== "Sonstiges" || reportToCustom.trim().length >= 2)) &&
+    name.trim().length >= 2 && gliederung.trim().length >= 2 && aufsichtName.trim().length >= 2 && gjValid;
 
   const handleStart = () => {
     const params = new URLSearchParams({
@@ -112,13 +115,21 @@ export default function Home() {
           <div>
             <label className="block text-sm font-semibold mb-1">Geschäftsjahr</label>
             <input
-              type="text"
+              type="number"
+              min="2000"
+              max={new Date().getFullYear()}
+              inputMode="numeric"
               value={geschaeftsjahr}
               onChange={(e) => setGeschaeftsjahr(e.target.value)}
-              placeholder="2025"
+              placeholder={String(new Date().getFullYear() - 1)}
               className="w-full px-3 py-2 rounded-[10px] text-sm"
-              style={{ border: "1px solid var(--border)" }}
+              style={{ border: `1px solid ${gjValid || !geschaeftsjahr ? "var(--border)" : "var(--danger)"}` }}
             />
+            {geschaeftsjahr && !gjValid && (
+              <p className="text-xs mt-1" style={{ color: "var(--danger)" }}>
+                Bitte ein gültiges Geschäftsjahr eingeben (2000–{new Date().getFullYear()}).
+              </p>
+            )}
           </div>
 
           {/* Name */}
@@ -130,8 +141,11 @@ export default function Home() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Vor- und Nachname"
               className="w-full px-3 py-2 rounded-[10px] text-sm"
-              style={{ border: "1px solid var(--border)" }}
+              style={{ border: `1px solid ${name && name.trim().length < 2 ? "var(--danger)" : "var(--border)"}` }}
             />
+            {name && name.trim().length < 2 && (
+              <p className="text-xs mt-1" style={{ color: "var(--danger)" }}>Bitte vollständigen Namen eingeben.</p>
+            )}
           </div>
 
           {/* Rolle */}
@@ -174,8 +188,11 @@ export default function Home() {
               onChange={(e) => setGliederung(e.target.value)}
               placeholder="z.B. Kreisverband Städteregion Aachen e.V."
               className="w-full px-3 py-2 rounded-[10px] text-sm"
-              style={{ border: "1px solid var(--border)" }}
+              style={{ border: `1px solid ${gliederung && gliederung.trim().length < 2 ? "var(--danger)" : "var(--border)"}` }}
             />
+            {gliederung && gliederung.trim().length < 2 && (
+              <p className="text-xs mt-1" style={{ color: "var(--danger)" }}>Bitte vollständige Bezeichnung eingeben.</p>
+            )}
           </div>
 
           <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0.5rem 0" }} />
@@ -220,8 +237,11 @@ export default function Home() {
               onChange={(e) => setAufsichtName(e.target.value)}
               placeholder="Vor- und Nachname"
               className="w-full px-3 py-2 rounded-[10px] text-sm"
-              style={{ border: "1px solid var(--border)" }}
+              style={{ border: `1px solid ${aufsichtName && aufsichtName.trim().length < 2 ? "var(--danger)" : "var(--border)"}` }}
             />
+            {aufsichtName && aufsichtName.trim().length < 2 && (
+              <p className="text-xs mt-1" style={{ color: "var(--danger)" }}>Bitte vollständigen Namen eingeben.</p>
+            )}
           </div>
         </div>
       </div>
