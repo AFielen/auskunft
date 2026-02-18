@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { roles, reportTargets } from "@/lib/questions";
 import { card } from "@/lib/styles";
+import { APP_VERSION, APP_DATE } from "@/lib/version";
 
 export default function Home() {
   const router = useRouter();
@@ -87,6 +88,9 @@ export default function Home() {
 
           <p className="text-xs text-center mt-3" style={{ color: "var(--text-light)" }}>
             Open Source & kostenlos — steht allen DRK-Gliederungen frei zur Verfügung.
+          </p>
+          <p className="text-xs text-center mt-2" style={{ color: "var(--text-light)", opacity: 0.6 }}>
+            Version {APP_VERSION} · Stand {APP_DATE}
           </p>
         </div>
       </div>
