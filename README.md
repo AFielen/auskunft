@@ -14,6 +14,7 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 
 ## ✨ Features
 
+### Web-App
 - **Geführter Wizard** — 6 Abschnitte mit Ja/Nein/Teilweise-Fragen und Hilfe-Erklärungen
 - **Rollenauswahl** — Geschäftsführer, Vorstand, Prokurist oder eigene Funktion
 - **Flexibles Reporting** — Wählen Sie selbst, an wen Sie berichten
@@ -21,19 +22,25 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 - **PDF-Report** — Vollständiger Bericht mit DRK-Branding, Unterschriftszeile und Zusammenfassung
 - **Zwischenspeichern** — Fortschritt wird im Browser gespeichert (localStorage)
 - **Exit-Guard** — Warnung beim versehentlichen Schließen des Tabs
-- **Mobile-optimiert** — Responsive Design, große Touch-Targets
-- **Keine Datenspeicherung** — Alles bleibt auf Ihrem Gerät. Nichts wird auf dem Server gespeichert.
+- **Mobile-optimiert** — Responsive Design mit Bottom-Sheet-Hilfe auf dem Handy
+
+### REST-API (für KI-Assistenten)
+- **Schema abrufen** — `GET /api/auskunft` liefert alle Fragen, Typen und erlaubte Werte
+- **Report generieren** — `POST /api/auskunft` mit JSON → HTML-Report zurück
+- **Agent-ready** — KI-Assistenten können die Selbstauskunft im Gespräch ausfüllen
+
+→ Details zur API: [AGENT.md](AGENT.md)
 
 ## 📋 Abschnitte
 
-| # | Thema |
-|---|-------|
-| 1 | Geschäftsführung & Interessenkonflikte |
-| 2 | Sitzungen & Beschlussfassungen |
-| 3 | Zustimmungspflichtige Rechtsgeschäfte |
-| 4 | Arbeitgeberstellung |
-| 5 | Finanzwesen |
-| 6 | Revision & Compliance |
+| # | Thema | Fragen |
+|---|-------|--------|
+| 1 | Geschäftsführung & Interessenkonflikte | 6 |
+| 2 | Sitzungen & Beschlussfassungen | 3 |
+| 3 | Zustimmungspflichtige Rechtsgeschäfte | 5 |
+| 4 | Arbeitgeberstellung | 11 |
+| 5 | Finanzwesen | 8 |
+| 6 | Revision & Compliance | 3 |
 
 ## 🚀 Installation
 
@@ -56,58 +63,54 @@ npm install
 npm run dev
 ```
 
-Öffne [http://localhost:3000](http://localhost:3000).
-
 ## 🛠️ Tech-Stack
 
 - [Next.js 16](https://nextjs.org/) + [React 19](https://react.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [Tailwind CSS 4](https://tailwindcss.com/)
 
-## 📐 Architektur
+## 📐 Projektstruktur
 
 ```
 auskunft/
 ├── app/
-│   ├── layout.tsx          # DRK-Header + Footer mit Impressum/Datenschutz
-│   ├── page.tsx            # Startseite (Hero) + Personen-Setup
-│   ├── globals.css         # DRK-Farbvariablen + Animationen
-│   ├── not-found.tsx       # Custom 404
-│   ├── wizard/page.tsx     # Wizard + PDF-Report-Generator + Ergebnisseite
+│   ├── layout.tsx              # DRK-Header + Footer
+│   ├── page.tsx                # Startseite (Hero) + Personen-Setup
+│   ├── globals.css             # DRK-Farbvariablen + Animationen
+│   ├── not-found.tsx           # Custom 404
+│   ├── wizard/page.tsx         # Wizard + PDF-Report + Ergebnisseite
+│   ├── api/auskunft/route.ts   # REST-API für KI-Assistenten
 │   ├── impressum/page.tsx
 │   └── datenschutz/page.tsx
 ├── lib/
-│   ├── questions.ts        # Alle Fragen, Abschnitte, Rollen, Report-Targets
-│   └── styles.ts           # Shared CSS-in-JS Styles
+│   ├── questions.ts            # Fragen, Abschnitte, Rollen
+│   ├── styles.ts               # Shared Styles
+│   └── version.ts              # Versionierung
 ├── public/
-│   ├── logo.png / logo.svg # DRK-Logo
-│   └── favicon.svg         # DRK-Kreuz Favicon
+│   ├── logo.png / logo.svg
+│   └── favicon.svg
+├── AGENT.md                    # API-Doku für KI-Assistenten
 ├── Dockerfile
 └── docker-compose.yml
 ```
 
-## 🔒 Datenschutz
+## 🔒 Datenschutz & Sicherheit
 
 - **Keine Datenbank** — Alle Angaben existieren nur im Browser
 - **Keine Cookies** — Kein Tracking, keine Analytics
-- **Keine externe Dienste** — Keine Google Fonts, kein CDN, kein Analytics
-- **localStorage nur lokal** — Zwischenspeicher bleibt auf dem Gerät, wird bei Abgabe gelöscht
-- **DSGVO-konform** — Es werden keine personenbezogenen Daten serverseitig verarbeitet
-
-## 🔐 Sicherheit
-
-- HTML-Escaping aller Benutzereingaben in der PDF-Generierung (XSS-Schutz)
-- Keine serverseitige Datenverarbeitung
-- Keine API-Endpunkte die Nutzerdaten annehmen
+- **Keine externen Dienste** — Keine Google Fonts, kein CDN
+- **localStorage nur lokal** — Wird bei Abgabe automatisch gelöscht
+- **XSS-Schutz** — HTML-Escaping aller Benutzereingaben in der PDF-Generierung
+- **DSGVO-konform** — Keine serverseitige Verarbeitung personenbezogener Daten
 
 ## 🤝 Beitragen
 
-Pull Requests sind willkommen! Dieses Projekt steht allen DRK-Gliederungen frei zur Verfügung.
+Pull Requests sind willkommen!
 
 1. Fork erstellen
 2. Feature-Branch anlegen (`git checkout -b feature/mein-feature`)
-3. Änderungen committen (`git commit -m 'feat: Beschreibung'`)
-4. Branch pushen (`git push origin feature/mein-feature`)
+3. Committen (`git commit -m 'feat: Beschreibung'`)
+4. Pushen (`git push origin feature/mein-feature`)
 5. Pull Request öffnen
 
 ## 📄 Lizenz
