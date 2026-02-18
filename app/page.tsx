@@ -37,39 +37,57 @@ export default function Home() {
   if (step === "intro") {
     return (
       <div className="space-y-4">
-        <div style={card} className="p-6 md:p-8">
-          <div className="text-4xl mb-3">🛡️</div>
-          <h2 className="text-xl font-bold mb-3" style={{ color: "var(--drk)" }}>
-            Digitale Selbstauskunft
-          </h2>
-          <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text)" }}>
-            Mit diesem Tool füllen Sie die jährliche Selbstauskunft für Ihre DRK-Gliederung
-            digital aus — <strong>Schritt für Schritt, direkt auf dem Handy oder am Computer.</strong>
-          </p>
-
-          <div className="rounded-[10px] p-4 mb-4" style={{ background: "var(--bg)", border: "1px solid var(--border)" }}>
-            <h3 className="font-semibold text-sm mb-2" style={{ color: "var(--text)" }}>So funktioniert&apos;s:</h3>
-            <ul className="text-sm space-y-2" style={{ color: "var(--text-light)" }}>
-              <li>📋 <strong>Ausfüllen</strong> — 6 Abschnitte mit Ja/Nein/Teilweise-Fragen</li>
-              <li>📄 <strong>Abschicken oder Drucken</strong> — als PDF exportieren oder direkt versenden</li>
-              <li>🔒 <strong>Keine Datenspeicherung</strong> — Ihre Angaben werden nicht auf dem Server gespeichert</li>
-            </ul>
-          </div>
-
-          <div className="rounded-[10px] p-4 mb-6" style={{ background: "#f0f7ff", border: "1px solid #c5ddf5" }}>
-            <p className="text-xs" style={{ color: "var(--text-light)" }}>
-              <strong>Open Source & Kostenlos</strong> — Dieses Tool steht allen DRK-Gliederungen
-              frei zur Verfügung. Der Quellcode ist öffentlich einsehbar.
+        {/* Hero */}
+        <div className="hero">
+          <div className="relative z-1 max-w-[640px] mx-auto">
+            <div className="hero-icon">
+              <span>🛡️</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Digitale Selbstauskunft</h2>
+            <p className="text-sm opacity-90 leading-relaxed max-w-md mx-auto">
+              Jährliche Compliance-Erklärung für Vorstände, Geschäftsführer
+              und Prokuristen — Schritt für Schritt, direkt im Browser.
             </p>
+          </div>
+        </div>
+
+        {/* Feature Cards (overlap) */}
+        <div className="overlap-card fade-up fade-up-delay-2">
+          <div className="feature-grid">
+            <div className="feature-item">
+              <div className="feature-icon" style={{ background: "#fef3e0", color: "var(--warning)" }}>📋</div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Ausfüllen</p>
+                <p className="text-xs" style={{ color: "var(--text-light)" }}>6 Abschnitte mit Ja / Nein / Teilweise</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon" style={{ background: "#e8f5e9", color: "var(--success)" }}>📄</div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>PDF exportieren</p>
+                <p className="text-xs" style={{ color: "var(--text-light)" }}>Bericht drucken oder als PDF speichern</p>
+              </div>
+            </div>
+            <div className="feature-item">
+              <div className="feature-icon" style={{ background: "#e3f2fd", color: "#1976d2" }}>🔒</div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Keine Speicherung</p>
+                <p className="text-xs" style={{ color: "var(--text-light)" }}>Alle Daten bleiben lokal im Browser</p>
+              </div>
+            </div>
           </div>
 
           <button
             onClick={() => setStep("setup")}
-            className="w-full py-3 rounded-[10px] text-white font-semibold transition-colors"
+            className="w-full py-3 mt-6 rounded-[10px] text-white font-semibold transition-colors"
             style={{ background: "var(--drk)" }}
           >
             Selbstauskunft beginnen →
           </button>
+
+          <p className="text-xs text-center mt-3" style={{ color: "var(--text-light)" }}>
+            Open Source & kostenlos — steht allen DRK-Gliederungen frei zur Verfügung.
+          </p>
         </div>
       </div>
     );

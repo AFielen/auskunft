@@ -302,55 +302,102 @@ function WizardContent() {
     }
   }, [userName, userRole, gliederung, reportTo, aufsichtName, geschaeftsjahr, signOrt, answers, deviations]);
 
+  // Count total answered questions
+  const totalQuestions = sections.reduce((count, sec) => {
+    return count + sec.questions.filter((q) => {
+      if (q.conditionalOn && answers[q.conditionalOn.id] !== q.conditionalOn.value) return false;
+      return true;
+    }).length;
+  }, 0);
+
+  const answeredQuestions = sections.reduce((count, sec) => {
+    return count + sec.questions.filter((q) => {
+      if (q.conditionalOn && answers[q.conditionalOn.id] !== q.conditionalOn.value) return false;
+      return answers[q.id] !== undefined;
+    }).length;
+  }, 0);
+
   if (submitted) {
     return (
-      <div className="space-y-4">
-        <div style={card} className="p-8 text-center">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--drk)" }}>
-            Vielen Dank!
-          </h2>
-          <p style={{ color: "var(--text)" }} className="mb-2">
-            Ihre Selbstauskunft für das Geschäftsjahr {geschaeftsjahr} wurde vollständig ausgefüllt.
-          </p>
-          <p className="text-sm mb-2" style={{ color: "var(--text-light)" }}>
-            {userName} · {userRole} · {gliederung}
-          </p>
-          {deviationCount > 0 && (
-            <p className="text-sm mb-4" style={{ color: "var(--warning)" }}>
-              {deviationCount} Abweichung(en) wurden dokumentiert.
+      <div className="space-y-0">
+        {/* Hero */}
+        <div className="hero" style={{ paddingBottom: "64px" }}>
+          <div className="relative z-1 max-w-[640px] mx-auto">
+            <div className="hero-icon">
+              <span style={{ fontSize: "28px" }}>✓</span>
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Vielen Dank!</h2>
+            <p className="text-sm opacity-90 leading-relaxed">
+              Ihre Selbstauskunft für das Geschäftsjahr {geschaeftsjahr} wurde vollständig ausgefüllt.
             </p>
-          )}
-          <div className="mt-6 space-y-3">
-            <button
-              onClick={handlePrint}
-              className="w-full sm:w-auto px-8 py-3 rounded-[10px] text-white font-semibold"
-              style={{ background: "var(--drk)" }}
-            >
-              📄 Bericht als PDF drucken
-            </button>
-            <p className="text-xs" style={{ color: "var(--text-light)" }}>
-              Tipp: Im Druckdialog können Sie „Als PDF speichern" wählen.
-            </p>
+
+            {/* Stats */}
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <span className="hero-stat-value">{sections.length}</span>
+                <span className="hero-stat-label">Abschnitte</span>
+              </div>
+              <div className="hero-stat">
+                <span className="hero-stat-value">{answeredQuestions}/{totalQuestions}</span>
+                <span className="hero-stat-label">Fragen beantwortet</span>
+              </div>
+              {deviationCount > 0 && (
+                <div className="hero-stat">
+                  <span className="hero-stat-value">{deviationCount}</span>
+                  <span className="hero-stat-label">Abweichung(en)</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        <div style={card} className="p-6">
-          <h3 className="font-bold mb-2" style={{ color: "var(--text)" }}>So geht&apos;s weiter:</h3>
-          <ol className="text-sm space-y-2 list-decimal ml-5" style={{ color: "var(--text-light)" }}>
+        {/* Action Card (overlaps hero) */}
+        <div className="overlap-card fade-up" style={{ margin: "-36px 0 16px" }}>
+          <p className="text-sm mb-1 text-center" style={{ color: "var(--text-light)" }}>
+            {userName} · {userRole} · {gliederung}
+          </p>
+
+          <button
+            onClick={handlePrint}
+            className="w-full py-3 mt-4 rounded-[10px] text-white font-semibold transition-colors"
+            style={{ background: "var(--drk)" }}
+          >
+            Bericht als PDF drucken
+          </button>
+          <p className="text-xs text-center mt-2" style={{ color: "var(--text-light)" }}>
+            Tipp: Im Druckdialog können Sie &bdquo;Als PDF speichern&ldquo; wählen.
+          </p>
+        </div>
+
+        {/* So geht's weiter */}
+        <div className="fade-up fade-up-delay-2" style={{ ...card, padding: "24px", marginTop: "16px" }}>
+          <h3 className="font-bold text-sm mb-3" style={{ color: "var(--text)" }}>So geht&apos;s weiter</h3>
+          <ol className="steps-list">
             <li>Drucken Sie den Bericht als PDF oder auf Papier</li>
             <li>Leiten Sie das Dokument an Ihr Aufsichtsorgan weiter ({reportTo}: {aufsichtName})</li>
             <li>Bewahren Sie eine Kopie für Ihre Unterlagen auf</li>
           </ol>
         </div>
 
+        {/* Privacy note */}
         <div
-          className="rounded-[10px] p-4 text-center"
-          style={{ background: "#f0f7ff", border: "1px solid #c5ddf5" }}
+          className="fade-up fade-up-delay-3 rounded-[10px] p-4 text-center"
+          style={{ background: "#f0f7ff", border: "1px solid #c5ddf5", marginTop: "16px" }}
         >
           <p className="text-xs" style={{ color: "var(--text-light)" }}>
-            🔒 Ihre Daten wurden nicht gespeichert. Sobald Sie dieses Fenster schließen, sind alle Eingaben unwiderruflich gelöscht.
+            Ihre Daten wurden nicht gespeichert. Sobald Sie dieses Fenster schließen, sind alle Eingaben unwiderruflich gelöscht.
           </p>
+        </div>
+
+        {/* Restart */}
+        <div className="fade-up fade-up-delay-4 text-center" style={{ marginTop: "16px" }}>
+          <a
+            href="/"
+            className="text-sm font-medium"
+            style={{ color: "var(--drk)" }}
+          >
+            Neue Selbstauskunft starten →
+          </a>
         </div>
       </div>
     );
