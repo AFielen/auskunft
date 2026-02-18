@@ -1,8 +1,8 @@
 # 🛡️ DRK Selbstauskunft
 
-Digitale Selbstauskunft für Vorstände, Geschäftsführer und Prokuristen im Deutschen Roten Kreuz.
+**Digitale Compliance-Erklärung für Vorstände, Geschäftsführer und Prokuristen im Deutschen Roten Kreuz.**
 
-**Open Source · Kostenlos · Keine Datenspeicherung**
+Open Source · Kostenlos · Keine Datenspeicherung · DSGVO-konform
 
 ---
 
@@ -14,14 +14,15 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 
 ## ✨ Features
 
-- **6 Abschnitte** — Geführter Wizard durch alle Compliance-Themen
-- **Ja / Nein / Teilweise** — Klare Antwortoptionen mit Abweichungsbegründung
-- **Hilfe bei jeder Frage** — Verständliche Erklärungen per ?-Icon
+- **Geführter Wizard** — 6 Abschnitte mit Ja/Nein/Teilweise-Fragen und Hilfe-Erklärungen
 - **Rollenauswahl** — Geschäftsführer, Vorstand, Prokurist oder eigene Funktion
-- **Flexibles Reporting** — Wählen Sie selbst, an wen Sie berichten (Präsident, Aufsichtsratsvorsitzender, Justiziar, …)
-- **Mobile-optimiert** — Große Touch-Targets, responsive Design
-- **Keine Datenspeicherung** — Ihre Angaben bleiben auf Ihrem Gerät. Nichts wird auf dem Server gespeichert.
-- **PDF-Druck** — Fertige Auskunft direkt ausdrucken oder als PDF speichern
+- **Flexibles Reporting** — Wählen Sie selbst, an wen Sie berichten
+- **Abweichungen dokumentieren** — Bei "Nein" oder "Teilweise" wird automatisch eine Begründung verlangt
+- **PDF-Report** — Vollständiger Bericht mit DRK-Branding, Unterschriftszeile und Zusammenfassung
+- **Zwischenspeichern** — Fortschritt wird im Browser gespeichert (localStorage)
+- **Exit-Guard** — Warnung beim versehentlichen Schließen des Tabs
+- **Mobile-optimiert** — Responsive Design, große Touch-Targets
+- **Keine Datenspeicherung** — Alles bleibt auf Ihrem Gerät. Nichts wird auf dem Server gespeichert.
 
 ## 📋 Abschnitte
 
@@ -59,35 +60,45 @@ npm run dev
 
 ## 🛠️ Tech-Stack
 
-- [Next.js 15](https://nextjs.org/) — React Framework
-- [TypeScript](https://www.typescriptlang.org/) — Typsicherheit
-- [Tailwind CSS](https://tailwindcss.com/) — Styling
+- [Next.js 16](https://nextjs.org/) + [React 19](https://react.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS 4](https://tailwindcss.com/)
 
 ## 📐 Architektur
 
 ```
 auskunft/
 ├── app/
-│   ├── layout.tsx       # DRK-Header, Footer, globales Layout
-│   ├── page.tsx          # Startseite + Personen-Setup
-│   ├── globals.css       # DRK-Farbvariablen
-│   └── wizard/
-│       └── page.tsx      # Der eigentliche Wizard
+│   ├── layout.tsx          # DRK-Header + Footer mit Impressum/Datenschutz
+│   ├── page.tsx            # Startseite (Hero) + Personen-Setup
+│   ├── globals.css         # DRK-Farbvariablen + Animationen
+│   ├── not-found.tsx       # Custom 404
+│   ├── wizard/page.tsx     # Wizard + PDF-Report-Generator + Ergebnisseite
+│   ├── impressum/page.tsx
+│   └── datenschutz/page.tsx
 ├── lib/
-│   └── questions.ts      # Alle Fragen, Abschnitte, Rollen
+│   ├── questions.ts        # Alle Fragen, Abschnitte, Rollen, Report-Targets
+│   └── styles.ts           # Shared CSS-in-JS Styles
 ├── public/
-│   ├── logo.png          # DRK-Logo
-│   └── logo.svg
+│   ├── logo.png / logo.svg # DRK-Logo
+│   └── favicon.svg         # DRK-Kreuz Favicon
 ├── Dockerfile
 └── docker-compose.yml
 ```
 
 ## 🔒 Datenschutz
 
-- **Keine Datenbank** — Alle Angaben existieren nur im Browser des Nutzers
+- **Keine Datenbank** — Alle Angaben existieren nur im Browser
 - **Keine Cookies** — Kein Tracking, keine Analytics
-- **Keine Übertragung** — Daten verlassen das Gerät nur beim Drucken/PDF-Export
-- **DSGVO-konform** — Es werden keine personenbezogenen Daten verarbeitet oder gespeichert
+- **Keine externe Dienste** — Keine Google Fonts, kein CDN, kein Analytics
+- **localStorage nur lokal** — Zwischenspeicher bleibt auf dem Gerät, wird bei Abgabe gelöscht
+- **DSGVO-konform** — Es werden keine personenbezogenen Daten serverseitig verarbeitet
+
+## 🔐 Sicherheit
+
+- HTML-Escaping aller Benutzereingaben in der PDF-Generierung (XSS-Schutz)
+- Keine serverseitige Datenverarbeitung
+- Keine API-Endpunkte die Nutzerdaten annehmen
 
 ## 🤝 Beitragen
 
