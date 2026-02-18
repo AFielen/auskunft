@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "DRK Selbstauskunft",
   description: "Digitale Selbstauskunft für Vorstände, Geschäftsführer und Prokuristen",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="px-4 py-3 flex items-center gap-3"
         >
           <Link href="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="DRK Logo" width={42} height={42} />
+            <Image src="/logo.png" alt="DRK Logo" width={42} height={42} />
             <div>
               <h1 className="text-xl font-bold leading-tight">DRK Selbstauskunft</h1>
               <div className="text-xs opacity-85">Digitale Compliance-Erklärung</div>

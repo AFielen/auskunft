@@ -3,16 +3,13 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { sections } from "@/lib/questions";
+import { card } from "@/lib/styles";
 
 type ConfirmValue = "ja" | "nein" | "teilweise" | undefined;
 type Answers = Record<string, ConfirmValue | string | number>;
 type Deviations = Record<string, string>;
 
-const card = {
-  background: "var(--card)",
-  boxShadow: "0 2px 8px rgba(0,0,0,.06)",
-  borderRadius: "var(--radius)",
-};
+const STORAGE_KEY = "drk-selbstauskunft-draft";
 
 // ── Exit Guard ──
 function useExitGuard(active: boolean) {
@@ -236,11 +233,30 @@ function WizardContent() {
   const aufsichtName = searchParams.get("aufsichtName") || "";
   const geschaeftsjahr = searchParams.get("geschaeftsjahr") || "";
 
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answers>({});
-  const [deviations, setDeviations] = useState<Deviations>({});
-  const [signOrt, setSignOrt] = useState("");
+  // Restore from localStorage
+  const [step, setStep] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); return d.step ?? 0; } catch { return 0; }
+  });
+  const [answers, setAnswers] = useState<Answers>(() => {
+    if (typeof window === "undefined") return {};
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); return d.answers ?? {}; } catch { return {}; }
+  });
+  const [deviations, setDeviations] = useState<Deviations>(() => {
+    if (typeof window === "undefined") return {};
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); return d.deviations ?? {}; } catch { return {}; }
+  });
+  const [signOrt, setSignOrt] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try { const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); return d.signOrt ?? ""; } catch { return ""; }
+  });
   const [submitted, setSubmitted] = useState(false);
+
+  // Save to localStorage on every change
+  useEffect(() => {
+    if (submitted) { localStorage.removeItem(STORAGE_KEY); return; }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, answers, deviations, signOrt }));
+  }, [step, answers, deviations, signOrt, submitted]);
 
   // Activate exit guard whenever there are answers
   const hasAnswers = Object.keys(answers).length > 0;
@@ -257,6 +273,14 @@ function WizardContent() {
   const setDeviation = (id: string, value: string) => {
     setDeviations((prev) => ({ ...prev, [id]: value }));
   };
+
+  // Check if current section has unanswered confirmation questions
+  const currentSectionComplete = !section || section.questions.every((q) => {
+    if (q.conditionalOn && answers[q.conditionalOn.id] !== q.conditionalOn.value) return true;
+    if (q.type === "confirmation") return answers[q.id] !== undefined;
+    if (q.type === "number" && q.required) return answers[q.id] !== undefined;
+    return true;
+  });
 
   const deviationCount = sections.reduce((count, sec) => {
     return count + sec.questions.filter(
@@ -408,7 +432,7 @@ function WizardContent() {
                           min="0"
                           inputMode="numeric"
                           value={(answers[q.id] as number) ?? ""}
-                          onChange={(e) => setAnswer(q.id, parseInt(e.target.value) || 0)}
+                          onChange={(e) => setAnswer(q.id, Math.max(0, parseInt(e.target.value) || 0))}
                           className="w-28 px-3 py-2 rounded-[10px] text-sm"
                           style={{ border: "1px solid var(--border)" }}
                         />
@@ -540,10 +564,11 @@ function WizardContent() {
         ) : (
           <button
             onClick={() => setStep(Math.min(totalSteps - 1, step + 1))}
-            className="px-5 py-2 rounded-[10px] text-sm font-semibold text-white transition-colors"
+            disabled={!currentSectionComplete}
+            className="px-5 py-2 rounded-[10px] text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: "var(--drk)" }}
           >
-            Weiter →
+            {currentSectionComplete ? "Weiter →" : "Bitte alle Fragen beantworten"}
           </button>
         )}
       </div>

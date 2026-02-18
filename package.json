@@ -8,14 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "typescript": "latest",
-    "@types/react": "latest",
-    "@types/node": "latest",
-    "tailwindcss": "latest",
-    "@tailwindcss/postcss": "latest",
-    "postcss": "latest"
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
+    "@types/react": "^19.2.14",
+    "@types/node": "^25.2.3",
+    "tailwindcss": "^4.2.0",
+    "@tailwindcss/postcss": "^4.2.0",
+    "postcss": "^8.5.6"
   }
 }

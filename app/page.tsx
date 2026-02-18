@@ -3,12 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { roles, reportTargets } from "@/lib/questions";
-
-const card = {
-  background: "var(--card)",
-  boxShadow: "0 2px 8px rgba(0,0,0,.06)",
-  borderRadius: "var(--radius)",
-};
+import { card } from "@/lib/styles";
 
 export default function Home() {
   const router = useRouter();
