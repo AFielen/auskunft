@@ -97,6 +97,16 @@ function ConfirmButtons({
   );
 }
 
+// ── HTML Escaping (XSS prevention) ──
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ── PDF Report Generation ──
 function generateReport(
   params: {
@@ -121,7 +131,7 @@ function generateReport(
   };
 
   let html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
-<title>Selbstauskunft ${params.name} — ${params.geschaeftsjahr}</title>
+<title>Selbstauskunft ${escapeHtml(params.name)} — ${escapeHtml(params.geschaeftsjahr)}</title>
 <style>
 @page { margin: 2cm; size: A4; }
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -158,13 +168,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   </div>`;
 
   html += `<div class="meta"><table>
-    <tr><td>Name:</td><td>${params.name}</td></tr>
-    <tr><td>Funktion:</td><td>${params.role}</td></tr>
-    <tr><td>DRK-Gliederung:</td><td>${params.gliederung}</td></tr>
-    <tr><td>Berichtet an:</td><td>${params.reportTo} (${params.aufsichtName})</td></tr>
-    <tr><td>Geschäftsjahr:</td><td>${params.geschaeftsjahr}</td></tr>
+    <tr><td>Name:</td><td>${escapeHtml(params.name)}</td></tr>
+    <tr><td>Funktion:</td><td>${escapeHtml(params.role)}</td></tr>
+    <tr><td>DRK-Gliederung:</td><td>${escapeHtml(params.gliederung)}</td></tr>
+    <tr><td>Berichtet an:</td><td>${escapeHtml(params.reportTo)} (${escapeHtml(params.aufsichtName)})</td></tr>
+    <tr><td>Geschäftsjahr:</td><td>${escapeHtml(params.geschaeftsjahr)}</td></tr>
     <tr><td>Datum:</td><td>${date}</td></tr>
-    <tr><td>Ort:</td><td>${params.ort}</td></tr>
+    <tr><td>Ort:</td><td>${escapeHtml(params.ort)}</td></tr>
   </table></div>`;
 
   for (const section of sections) {
@@ -179,14 +189,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
         const cls = val || "none";
         html += `<div class="q-answer ${cls}">${getLabel(val)}</div>`;
         if ((val === "nein" || val === "teilweise") && deviations[q.id]) {
-          html += `<div class="deviation"><strong>Begründung:</strong> ${deviations[q.id]}</div>`;
+          html += `<div class="deviation"><strong>Begründung:</strong> ${escapeHtml(deviations[q.id])}</div>`;
         }
       } else if (q.type === "number") {
         const val = answers[q.id] ?? "—";
         html += `<div class="number-answer">${val}</div>`;
       } else if (q.type === "text") {
         const val = answers[q.id] as string;
-        if (val) html += `<div class="text-answer">${val}</div>`;
+        if (val) html += `<div class="text-answer">${escapeHtml(val)}</div>`;
       }
 
       html += `</div>`;
@@ -198,19 +208,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
   html += `<div class="signature">
     <p><strong>Ich bestätige die Richtigkeit und Vollständigkeit meiner Angaben einschließlich etwaiger Anlagen.</strong></p>
     <div style="display:flex; gap:40px; margin-top:16px;">
-      <div><div class="sig-line"></div><div class="sig-label">${params.ort}, ${date}</div></div>
-      <div><div class="sig-line"></div><div class="sig-label">${params.name}</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">${escapeHtml(params.ort)}, ${date}</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">${escapeHtml(params.name)}</div></div>
     </div>
   </div>`;
 
   // Danke
   html += `<div class="danke">
     <h2>Vielen Dank!</h2>
-    <p>Ihre Selbstauskunft für das Geschäftsjahr ${params.geschaeftsjahr} wurde vollständig ausgefüllt.</p>
+    <p>Ihre Selbstauskunft für das Geschäftsjahr ${escapeHtml(params.geschaeftsjahr)} wurde vollständig ausgefüllt.</p>
     <p style="margin-top:8px">Bitte leiten Sie dieses Dokument an Ihr Aufsichtsorgan weiter.</p>
   </div>`;
 
-  html += `<div class="footer">DRK Selbstauskunft — Deutsches Rotes Kreuz · ${params.gliederung}</div>`;
+  html += `<div class="footer">DRK Selbstauskunft — Deutsches Rotes Kreuz · ${escapeHtml(params.gliederung)}</div>`;
   html += `</body></html>`;
 
   return html;
