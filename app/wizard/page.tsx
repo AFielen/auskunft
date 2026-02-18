@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { sections } from "@/lib/questions";
 
@@ -14,6 +14,20 @@ const card = {
   borderRadius: "var(--radius)",
 };
 
+// ── Exit Guard ──
+function useExitGuard(active: boolean) {
+  useEffect(() => {
+    if (!active) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [active]);
+}
+
+// ── Help Icon ──
 function HelpIcon({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -21,31 +35,35 @@ function HelpIcon({ text }: { text: string }) {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold"
+        className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shrink-0"
         style={{ background: "var(--border)", color: "var(--text-light)" }}
         aria-label="Hilfe"
       >
         ?
       </button>
       {open && (
-        <div
-          className="absolute z-10 left-0 top-7 w-72 p-3 rounded-[10px] text-xs leading-relaxed shadow-lg"
-          style={{ background: "var(--white)", border: "1px solid var(--border)", color: "var(--text)" }}
-        >
-          {text}
-          <button
-            onClick={() => setOpen(false)}
-            className="block mt-2 text-xs font-semibold"
-            style={{ color: "var(--drk)" }}
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div
+            className="absolute z-20 left-0 top-7 w-72 p-3 rounded-[10px] text-xs leading-relaxed shadow-lg"
+            style={{ background: "var(--white)", border: "1px solid var(--border)", color: "var(--text)" }}
           >
-            Schließen
-          </button>
-        </div>
+            {text}
+            <button
+              onClick={() => setOpen(false)}
+              className="block mt-2 text-xs font-semibold"
+              style={{ color: "var(--drk)" }}
+            >
+              Schließen
+            </button>
+          </div>
+        </>
       )}
     </span>
   );
 }
 
+// ── Confirm Buttons ──
 function ConfirmButtons({
   value,
   onChange,
@@ -53,10 +71,10 @@ function ConfirmButtons({
   value: ConfirmValue;
   onChange: (v: ConfirmValue) => void;
 }) {
-  const options: { label: string; val: ConfirmValue; color: string; activeBg: string }[] = [
-    { label: "Ja", val: "ja", color: "var(--success)", activeBg: "var(--success)" },
-    { label: "Nein", val: "nein", color: "var(--danger)", activeBg: "var(--danger)" },
-    { label: "Teilweise", val: "teilweise", color: "var(--warning)", activeBg: "var(--warning)" },
+  const options: { label: string; val: ConfirmValue; color: string }[] = [
+    { label: "✓ Ja", val: "ja", color: "var(--success)" },
+    { label: "✗ Nein", val: "nein", color: "var(--danger)" },
+    { label: "~ Teilweise", val: "teilweise", color: "var(--warning)" },
   ];
   return (
     <div className="flex gap-2 mt-2">
@@ -67,9 +85,9 @@ function ConfirmButtons({
           onClick={() => onChange(value === opt.val ? undefined : opt.val)}
           className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
           style={{
-            background: value === opt.val ? opt.activeBg : "var(--bg)",
+            background: value === opt.val ? opt.color : "var(--bg)",
             color: value === opt.val ? "var(--white)" : opt.color,
-            border: `2px solid ${value === opt.val ? opt.activeBg : opt.color}`,
+            border: `2px solid ${value === opt.val ? opt.color : opt.color}`,
           }}
         >
           {opt.label}
@@ -79,6 +97,126 @@ function ConfirmButtons({
   );
 }
 
+// ── PDF Report Generation ──
+function generateReport(
+  params: {
+    name: string;
+    role: string;
+    gliederung: string;
+    reportTo: string;
+    aufsichtName: string;
+    geschaeftsjahr: string;
+    ort: string;
+  },
+  answers: Answers,
+  deviations: Deviations
+) {
+  const date = new Date().toLocaleDateString("de-DE");
+
+  const getLabel = (val: ConfirmValue) => {
+    if (val === "ja") return "✓ Ja";
+    if (val === "nein") return "✗ Nein";
+    if (val === "teilweise") return "~ Teilweise";
+    return "— Nicht beantwortet";
+  };
+
+  let html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8">
+<title>Selbstauskunft ${params.name} — ${params.geschaeftsjahr}</title>
+<style>
+@page { margin: 2cm; size: A4; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11pt; color: #2a2a2a; line-height: 1.5; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 3px solid #e30613; }
+.header h1 { font-size: 18pt; color: #e30613; }
+.header .sub { font-size: 9pt; color: #777; }
+.meta { background: #f4f4f4; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 10pt; }
+.meta table { width: 100%; } .meta td { padding: 2px 8px; } .meta td:first-child { font-weight: 700; width: 200px; }
+.section { margin-bottom: 18px; page-break-inside: avoid; }
+.section h2 { font-size: 13pt; color: #e30613; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e0e0e0; }
+.question { padding: 6px 0; border-bottom: 1px dotted #e0e0e0; }
+.question:last-child { border-bottom: none; }
+.q-text { font-size: 10pt; }
+.q-answer { font-size: 10pt; font-weight: 700; margin-top: 2px; }
+.q-answer.ja { color: #2e7d32; }
+.q-answer.nein { color: #c62828; }
+.q-answer.teilweise { color: #f9a825; }
+.q-answer.none { color: #999; }
+.deviation { background: #fef3e0; border-left: 3px solid #f9a825; padding: 6px 10px; margin-top: 4px; font-size: 9pt; border-radius: 4px; }
+.number-answer { font-size: 10pt; font-weight: 700; }
+.text-answer { font-size: 10pt; background: #f4f4f4; padding: 6px 10px; border-radius: 4px; margin-top: 4px; white-space: pre-wrap; }
+.signature { margin-top: 30px; padding-top: 16px; border-top: 2px solid #e30613; }
+.sig-line { border-bottom: 1px solid #2a2a2a; width: 300px; height: 40px; margin-top: 8px; }
+.sig-label { font-size: 9pt; color: #777; margin-top: 4px; }
+.danke { margin-top: 40px; text-align: center; padding: 20px; background: #f4f4f4; border-radius: 8px; page-break-inside: avoid; }
+.danke h2 { color: #e30613; font-size: 14pt; margin-bottom: 8px; }
+.danke p { font-size: 10pt; color: #777; }
+.footer { margin-top: 20px; text-align: center; font-size: 8pt; color: #999; }
+</style></head><body>`;
+
+  html += `<div class="header">
+    <div><h1>DRK Selbstauskunft</h1><div class="sub">Digitale Compliance-Erklärung</div></div>
+  </div>`;
+
+  html += `<div class="meta"><table>
+    <tr><td>Name:</td><td>${params.name}</td></tr>
+    <tr><td>Funktion:</td><td>${params.role}</td></tr>
+    <tr><td>DRK-Gliederung:</td><td>${params.gliederung}</td></tr>
+    <tr><td>Berichtet an:</td><td>${params.reportTo} (${params.aufsichtName})</td></tr>
+    <tr><td>Geschäftsjahr:</td><td>${params.geschaeftsjahr}</td></tr>
+    <tr><td>Datum:</td><td>${date}</td></tr>
+    <tr><td>Ort:</td><td>${params.ort}</td></tr>
+  </table></div>`;
+
+  for (const section of sections) {
+    html += `<div class="section"><h2>${section.title}</h2>`;
+    for (const q of section.questions) {
+      if (q.conditionalOn && answers[q.conditionalOn.id] !== q.conditionalOn.value) continue;
+
+      html += `<div class="question"><div class="q-text">${q.text}</div>`;
+
+      if (q.type === "confirmation") {
+        const val = answers[q.id] as ConfirmValue;
+        const cls = val || "none";
+        html += `<div class="q-answer ${cls}">${getLabel(val)}</div>`;
+        if ((val === "nein" || val === "teilweise") && deviations[q.id]) {
+          html += `<div class="deviation"><strong>Begründung:</strong> ${deviations[q.id]}</div>`;
+        }
+      } else if (q.type === "number") {
+        const val = answers[q.id] ?? "—";
+        html += `<div class="number-answer">${val}</div>`;
+      } else if (q.type === "text") {
+        const val = answers[q.id] as string;
+        if (val) html += `<div class="text-answer">${val}</div>`;
+      }
+
+      html += `</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // Signature
+  html += `<div class="signature">
+    <p><strong>Ich bestätige die Richtigkeit und Vollständigkeit meiner Angaben einschließlich etwaiger Anlagen.</strong></p>
+    <div style="display:flex; gap:40px; margin-top:16px;">
+      <div><div class="sig-line"></div><div class="sig-label">${params.ort}, ${date}</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">${params.name}</div></div>
+    </div>
+  </div>`;
+
+  // Danke
+  html += `<div class="danke">
+    <h2>Vielen Dank!</h2>
+    <p>Ihre Selbstauskunft für das Geschäftsjahr ${params.geschaeftsjahr} wurde vollständig ausgefüllt.</p>
+    <p style="margin-top:8px">Bitte leiten Sie dieses Dokument an Ihr Aufsichtsorgan weiter.</p>
+  </div>`;
+
+  html += `<div class="footer">DRK Selbstauskunft — Deutsches Rotes Kreuz · ${params.gliederung}</div>`;
+  html += `</body></html>`;
+
+  return html;
+}
+
+// ── Wizard Content ──
 function WizardContent() {
   const searchParams = useSearchParams();
   const userName = searchParams.get("name") || "";
@@ -93,6 +231,10 @@ function WizardContent() {
   const [deviations, setDeviations] = useState<Deviations>({});
   const [signOrt, setSignOrt] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  // Activate exit guard whenever there are answers
+  const hasAnswers = Object.keys(answers).length > 0;
+  useExitGuard(hasAnswers && !submitted);
 
   const totalSteps = sections.length + 1;
   const section = sections[step];
@@ -112,32 +254,69 @@ function WizardContent() {
     ).length;
   }, 0);
 
+  const handlePrint = useCallback(() => {
+    const html = generateReport(
+      { name: userName, role: userRole, gliederung, reportTo, aufsichtName, geschaeftsjahr, ort: signOrt },
+      answers,
+      deviations
+    );
+    const w = window.open("", "_blank");
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 300);
+    }
+  }, [userName, userRole, gliederung, reportTo, aufsichtName, geschaeftsjahr, signOrt, answers, deviations]);
+
   if (submitted) {
     return (
-      <div style={card} className="p-8 text-center">
-        <div className="text-5xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--drk)" }}>
-          Selbstauskunft abgegeben
-        </h2>
-        <p style={{ color: "var(--text)" }} className="mb-2">
-          Vielen Dank, {userName}.
-        </p>
-        <p className="text-sm mb-4" style={{ color: "var(--text-light)" }}>
-          {userRole} — {gliederung} — Geschäftsjahr {geschaeftsjahr}
-        </p>
-        {deviationCount > 0 && (
-          <p className="text-sm" style={{ color: "var(--warning)" }}>
-            {deviationCount} Abweichung(en) wurden dokumentiert.
+      <div className="space-y-4">
+        <div style={card} className="p-8 text-center">
+          <div className="text-5xl mb-4">✅</div>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--drk)" }}>
+            Vielen Dank!
+          </h2>
+          <p style={{ color: "var(--text)" }} className="mb-2">
+            Ihre Selbstauskunft für das Geschäftsjahr {geschaeftsjahr} wurde vollständig ausgefüllt.
           </p>
-        )}
-        <div className="mt-6">
-          <button
-            onClick={() => window.print()}
-            className="px-6 py-2 rounded-[10px] text-sm font-semibold text-white"
-            style={{ background: "var(--drk)" }}
-          >
-            📄 Als PDF drucken
-          </button>
+          <p className="text-sm mb-2" style={{ color: "var(--text-light)" }}>
+            {userName} · {userRole} · {gliederung}
+          </p>
+          {deviationCount > 0 && (
+            <p className="text-sm mb-4" style={{ color: "var(--warning)" }}>
+              {deviationCount} Abweichung(en) wurden dokumentiert.
+            </p>
+          )}
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={handlePrint}
+              className="w-full sm:w-auto px-8 py-3 rounded-[10px] text-white font-semibold"
+              style={{ background: "var(--drk)" }}
+            >
+              📄 Bericht als PDF drucken
+            </button>
+            <p className="text-xs" style={{ color: "var(--text-light)" }}>
+              Tipp: Im Druckdialog können Sie „Als PDF speichern" wählen.
+            </p>
+          </div>
+        </div>
+
+        <div style={card} className="p-6">
+          <h3 className="font-bold mb-2" style={{ color: "var(--text)" }}>So geht&apos;s weiter:</h3>
+          <ol className="text-sm space-y-2 list-decimal ml-5" style={{ color: "var(--text-light)" }}>
+            <li>Drucken Sie den Bericht als PDF oder auf Papier</li>
+            <li>Leiten Sie das Dokument an Ihr Aufsichtsorgan weiter ({reportTo}: {aufsichtName})</li>
+            <li>Bewahren Sie eine Kopie für Ihre Unterlagen auf</li>
+          </ol>
+        </div>
+
+        <div
+          className="rounded-[10px] p-4 text-center"
+          style={{ background: "#f0f7ff", border: "1px solid #c5ddf5" }}
+        >
+          <p className="text-xs" style={{ color: "var(--text-light)" }}>
+            🔒 Ihre Daten wurden nicht gespeichert. Sobald Sie dieses Fenster schließen, sind alle Eingaben unwiderruflich gelöscht.
+          </p>
         </div>
       </div>
     );
@@ -158,7 +337,7 @@ function WizardContent() {
         </span>
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress */}
       <div style={card} className="p-4">
         <div className="flex justify-between text-sm mb-2" style={{ color: "var(--text-light)" }}>
           <span>Schritt {step + 1} von {totalSteps}</span>
@@ -172,7 +351,7 @@ function WizardContent() {
         </div>
       </div>
 
-      {/* Section Content */}
+      {/* Section */}
       <div style={card} className="p-5 md:p-6">
         {!isLastSection && section ? (
           <>
@@ -181,7 +360,6 @@ function WizardContent() {
 
             <div className="space-y-3">
               {section.questions.map((q) => {
-                // Conditional visibility
                 if (q.conditionalOn && answers[q.conditionalOn.id] !== q.conditionalOn.value) return null;
 
                 const answer = answers[q.id] as ConfirmValue;
