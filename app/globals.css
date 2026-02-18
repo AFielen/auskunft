@@ -26,11 +26,17 @@ body {
 .hero {
   background: linear-gradient(135deg, var(--drk) 0%, var(--drk-dark) 100%);
   color: var(--white);
-  padding: 48px 24px 72px;
+  padding: 36px 16px 60px;
   text-align: center;
   position: relative;
   overflow: hidden;
   border-radius: var(--radius);
+}
+
+@media (min-width: 640px) {
+  .hero {
+    padding: 48px 24px 72px;
+  }
 }
 
 .hero::before {
@@ -60,10 +66,17 @@ body {
 
 .hero-stats {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 32px;
+  gap: 20px;
   margin-top: 24px;
   animation: fade-up 0.5s ease-out 0.3s both;
+}
+
+@media (min-width: 640px) {
+  .hero-stats {
+    gap: 32px;
+  }
 }
 
 .hero-stat {
@@ -108,10 +121,16 @@ body {
   background: var(--card);
   border-radius: var(--radius);
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  padding: 32px 28px;
+  padding: 24px 16px;
   margin-top: -36px;
   position: relative;
   z-index: 2;
+}
+
+@media (min-width: 640px) {
+  .overlap-card {
+    padding: 32px 28px;
+  }
 }
 
 /* Feature grid for start page */
@@ -200,7 +219,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 90px;
+  flex: 1;
+  min-width: 70px;
+  max-width: 100px;
   height: 80px;
   border-radius: var(--radius);
   border: 2px solid var(--border);

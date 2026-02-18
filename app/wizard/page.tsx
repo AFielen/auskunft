@@ -24,7 +24,7 @@ function useExitGuard(active: boolean) {
   }, [active]);
 }
 
-// ── Help Icon ──
+// ── Help Icon (Bottom-Sheet on mobile) ──
 function HelpIcon({ text }: { text: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -40,15 +40,15 @@ function HelpIcon({ text }: { text: string }) {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setOpen(false)} />
           <div
-            className="absolute z-20 left-0 top-7 w-72 p-3 rounded-[10px] text-xs leading-relaxed shadow-lg"
+            className="fixed z-50 left-4 right-4 bottom-4 sm:absolute sm:left-auto sm:right-0 sm:bottom-auto sm:top-7 sm:w-72 p-4 sm:p-3 rounded-[14px] sm:rounded-[10px] text-sm sm:text-xs leading-relaxed shadow-xl"
             style={{ background: "var(--white)", border: "1px solid var(--border)", color: "var(--text)" }}
           >
             {text}
             <button
               onClick={() => setOpen(false)}
-              className="block mt-2 text-xs font-semibold"
+              className="block mt-3 sm:mt-2 text-sm sm:text-xs font-semibold"
               style={{ color: "var(--drk)" }}
             >
               Schließen
@@ -74,13 +74,13 @@ function ConfirmButtons({
     { label: "~ Teilweise", val: "teilweise", color: "var(--warning)" },
   ];
   return (
-    <div className="flex gap-2 mt-2">
+    <div className="flex flex-wrap gap-2 mt-2">
       {options.map((opt) => (
         <button
           key={opt.val}
           type="button"
           onClick={() => onChange(value === opt.val ? undefined : opt.val)}
-          className="px-4 py-1.5 rounded-full text-sm font-semibold transition-all"
+          className="px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all"
           style={{
             background: value === opt.val ? opt.color : "var(--bg)",
             color: value === opt.val ? "var(--white)" : opt.color,
@@ -702,7 +702,7 @@ function WizardContent() {
             className="px-5 py-2 rounded-[10px] text-sm font-semibold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: "var(--drk)" }}
           >
-            {currentSectionComplete ? "Weiter →" : "Bitte alle Fragen beantworten"}
+            {currentSectionComplete ? "Weiter →" : "Alle Fragen beantworten"}
           </button>
         )}
       </div>
