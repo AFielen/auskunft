@@ -241,7 +241,8 @@ docker compose up -d --build
 - **Fonts:** System fonts (-apple-system, Segoe UI) for speed
 - **DRK Colors:** `--drk: #e30613` (defined in `globals.css`)
 - **No Analytics:** Intentional - privacy-first design
-- **API for Agents:** See `AGENT.md` in repo (separate doc for AI integration)
+- **API for Agents:** See `API-INTEGRATION.md` in repo (separate doc for AI REST API)
+- **Project Context:** This file (PROJECT.md) - for human/AI developers
 - **Presentation:** Introduced at DRK Landesversammlung 2025-04-09
 - **Target Users:** ~200 DRK Kreisverbände in NRW
 

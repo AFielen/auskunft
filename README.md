@@ -31,7 +31,7 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 - **Report generieren** — `POST /api/auskunft` mit JSON → HTML-Report zurück
 - **Agent-ready** — KI-Assistenten können die Selbstauskunft im Gespräch ausfüllen
 
-→ Details zur API: [AGENT.md](AGENT.md)
+→ Details zur API: [API-INTEGRATION.md](API-INTEGRATION.md)
 
 ## 📋 Abschnitte
 
