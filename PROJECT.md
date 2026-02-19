@@ -2,7 +2,7 @@
 project: DRK Selbstauskunft
 type: web-app
 status: active
-updated: 2025-02-19
+updated: 2026-02-19
 ---
 
 # DRK Selbstauskunft
@@ -150,6 +150,21 @@ auskunft/
   - Can't aggregate feedback across all instances
 - **Files:** `app/api/feedback/route.ts`, `lib/instance.ts`
 
+### Hilfe-Seite: App-Designsystem statt Prose
+
+- **Date:** 2026-02-19
+- **Context:** Hilfe-Seite nutzte `prose` Tailwind-Typography — sah aus wie Wikipedia, nicht wie die App
+- **Options:**
+  1. prose beibehalten, nur Farben anpassen
+  2. Komplett ins App-Designsystem umbauen
+- **Decision:** Kompletter Umbau
+- **Rationale:**
+  - Konsistente UX über alle Seiten
+  - Hero, Cards, Accordion, Feature-Grid bereits vorhanden — nur wiederverwenden
+  - FAQ als Accordion spart Platz und ist interaktiver
+  - Feedback-Formular mit Pill-Buttons statt Select passt zum Rollen-Selector
+- **Files:** `app/hilfe/page.tsx`
+
 ### Server-Side PDF Generation Avoided
 
 - **Date:** 2025-02-18
@@ -171,10 +186,16 @@ auskunft/
 
 ## Current State
 
+### Done (2026-02-19)
+
+- [x] QR-Code im PDF-Report mit komprimiertem Formular-State (lz-string + qrcode)
+- [x] State-Wiederherstellung: QR-Code scannen → `?state=` URL → Startseite füllt alle Felder vor
+- [x] State-Codec mit Graceful Degradation: bei geänderten Fragen werden unbekannte IDs ignoriert, neue Fragen bleiben leer
+- [x] Grünes Banner "Daten aus QR-Code wiederhergestellt" auf der Startseite
+- [x] Hilfe-Seite komplett ins App-Designsystem umgebaut (Hero, Cards, FAQ-Accordion, Feature-Grid, Pill-Buttons, Fade-up-Animationen)
+
 ### In Progress
 
-- [x] Hilfe-Seite mit DRK-Kontext
-- [x] Feedback-System mit Privacy-by-Design
 - [ ] Deployment auf HTTPS (Domain + SSL)
 
 ### Planned
@@ -248,4 +269,4 @@ docker compose up -d --build
 
 ---
 
-_Last updated: 2025-02-19 by Henry (AI)_
+_Last updated: 2026-02-19 by Claude (AI)_
