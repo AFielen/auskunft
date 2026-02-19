@@ -24,6 +24,7 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 - **Zwischenspeichern** — Fortschritt wird im Browser gespeichert (localStorage)
 - **Exit-Guard** — Warnung beim versehentlichen Schließen des Tabs
 - **Mobile-optimiert** — Responsive Design mit Bottom-Sheet-Hilfe auf dem Handy
+- **Hilfe & Feedback** — Integrierte Hilfeseite mit FAQ, DRK-Kontext und Feedback-Formular
 
 ### REST-API (für KI-Assistenten)
 - **Schema abrufen** — `GET /api/auskunft` liefert alle Fragen, Typen und erlaubte Werte
@@ -50,6 +51,12 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 ```bash
 git clone https://github.com/AFielen/auskunft.git
 cd auskunft
+
+# Optional: .env für Feedback-System konfigurieren
+cp .env.example .env
+# Öffne die App, gehe zu /hilfe, kopiere deine Instanz-ID
+# Trage sie in .env ein: DRK_INSTANCE_ID=abc-def-...
+
 docker compose up -d --build
 ```
 
@@ -63,6 +70,13 @@ cd auskunft
 npm install
 npm run dev
 ```
+
+### Feedback-System aktivieren (optional)
+
+1. Starte die App und besuche `/hilfe`
+2. Kopiere deine **Instanz-ID** (am Ende der Seite)
+3. Setze die Umgebungsvariable `DRK_INSTANCE_ID` auf deinen Server
+4. Feedback wird in `/data/drk-feedback/` gespeichert
 
 ## 🛠️ Tech-Stack
 

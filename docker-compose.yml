@@ -7,3 +7,6 @@ services:
       - "3333:3000"
     environment:
       - NODE_ENV=production
+      - DRK_INSTANCE_ID=${DRK_INSTANCE_ID:-}
+    volumes:
+      - /data/drk-feedback:/data/drk-feedback
