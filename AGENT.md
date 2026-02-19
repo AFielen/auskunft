@@ -1,212 +1,250 @@
-# 🤖 AGENT.md — KI-Assistenten-Schnittstelle
+---
+project: DRK Selbstauskunft
+type: web-app
+status: active
+updated: 2025-02-19
+---
 
-Dieses Dokument beschreibt, wie ein KI-Assistent die DRK Selbstauskunft programmatisch ausfüllen kann.
+# DRK Selbstauskunft
+
+Digitale Compliance-Erklärung für Vorstände, Geschäftsführer und Prokuristen im Deutschen Roten Kreuz.
+
+## What It Does
+
+- Guided wizard with 36 questions across 6 compliance sections
+- Generates PDF reports with QR codes for next-year pre-fill
+- Privacy-first: No database, all data in browser localStorage
+- Feedback system for continuous improvement
+- REST API for AI assistant integration
+
+## Quick Links
+
+- **Live:** (wird noch konfiguriert - läuft auf VPS)
+- **Repo:** https://github.com/AFielen/auskunft/
+- **Local Dev:** http://localhost:3333
 
 ---
 
-## API-Endpunkte
+## Tech Stack
 
-| Methode | Pfad | Beschreibung |
-|---------|------|--------------|
-| `GET` | `/api/auskunft` | Schema abrufen: alle Fragen, Typen, erlaubte Werte |
-| `POST` | `/api/auskunft` | Selbstauskunft einreichen → HTML-Report zurück |
+### Frontend
+- Framework: Next.js 16 (App Router)
+- Language: TypeScript 5.3
+- Styling: Tailwind CSS 4
+- State Management: React useState + localStorage
 
-## Schema abrufen
+### Backend
+- Runtime: Node 22
+- Framework: Next.js API Routes
+- Database: None (by design - privacy-first)
+- File Storage: `/data/drk-feedback/` (VPS host)
+
+### Infrastructure
+- Hosting: Docker on Hostinger VPS
+- Deployment: Manual via git pull + docker compose rebuild
+- Monitoring: None yet
+
+### Development
+- Package Manager: npm
+- Bundler: Next.js (Turbopack in dev)
+- Testing: None yet
+
+---
+
+## Architecture
+
+### Directory Structure
+
+```
+auskunft/
+├── app/
+│   ├── page.tsx              # Homepage + person setup
+│   ├── wizard/page.tsx       # Main wizard + PDF report
+│   ├── hilfe/page.tsx        # Help page + feedback form
+│   ├── api/
+│   │   ├── auskunft/route.ts # AI agent API
+│   │   └── feedback/route.ts # Feedback submission
+│   ├── impressum/            # Legal pages
+│   └── datenschutz/
+├── lib/
+│   ├── questions.ts          # Question data + sections
+│   ├── report.ts             # PDF HTML generation
+│   ├── state-codec.ts        # QR code compression (lz-string)
+│   ├── qr-svg.ts             # QR code SVG generation
+│   ├── instance.ts           # Instanz-ID management
+│   └── version.ts            # Versioning
+├── components/               # Reusable UI (minimal)
+├── public/                   # Logo, favicon
+└── Dockerfile + docker-compose.yml
+```
+
+### Key Patterns
+
+- **Data Flow:** All state in React (useState) → localStorage persistence → PDF export
+- **Privacy:** No server-side data storage except opt-in feedback with instance ID
+- **QR Codes:** Compress entire form state into QR → scan to pre-fill next year
+- **AI Integration:** REST API (`/api/auskunft`) for agent-driven completion
+
+### Important Locations
+
+- Question definitions: `lib/questions.ts`
+- PDF template: `lib/report.ts` (HTML string generation)
+- Feedback API: `app/api/feedback/route.ts` (filters by instance ID)
+- Help page: `app/hilfe/page.tsx` (DRK context + FAQ)
+
+---
+
+## Architecture Decisions
+
+### No Database / Privacy-First
+
+- **Date:** 2025-02-18
+- **Context:** DRK needs compliance tool but DSGVO is critical
+- **Options:**
+  1. Store in database (PostgreSQL, Supabase)
+  2. Client-only (localStorage)
+- **Decision:** Client-only storage
+- **Rationale:**
+  - No personal data leaves the device
+  - No DSGVO concerns
+  - Simpler deployment (no DB to manage)
+- **Trade-offs:**
+  - Can't pre-fill from previous year without QR code
+  - No analytics on usage
+  - No multi-device sync
+- **Files:** All client-side logic in `app/wizard/page.tsx`
+
+### QR Code as "Offline Database"
+
+- **Date:** 2025-02-18
+- **Context:** Users want to save time next year by reusing answers
+- **Options:**
+  1. Account system with cloud storage
+  2. QR code with compressed state
+  3. Just make them re-enter everything
+- **Decision:** QR code compression
+- **Rationale:**
+  - No accounts → privacy preserved
+  - Works offline
+  - PDF becomes the "database"
+- **Trade-offs:**
+  - QR codes can be large (1000+ chars compressed)
+  - If PDF is lost, answers are lost
+- **Files:** `lib/state-codec.ts`, `lib/qr-svg.ts`
+
+### Feedback System with Instance ID
+
+- **Date:** 2025-02-19
+- **Context:** Need user feedback but can't track individuals
+- **Options:**
+  1. Public form (spam risk)
+  2. Email-only (friction)
+  3. Instance-ID filtering (privacy + control)
+- **Decision:** Instance-ID based privacy filter
+- **Rationale:**
+  - Only configured instance (mine) stores feedback
+  - Other instances get 200 OK but data discarded
+  - Users can self-host without worrying about data leaks
+- **Trade-offs:**
+  - More complex setup (need to configure ID)
+  - Can't aggregate feedback across all instances
+- **Files:** `app/api/feedback/route.ts`, `lib/instance.ts`
+
+### Server-Side PDF Generation Avoided
+
+- **Date:** 2025-02-18
+- **Context:** Generate PDF reports
+- **Options:**
+  1. Puppeteer server-side
+  2. Client-side HTML → Print
+- **Decision:** Client-side (browser print)
+- **Rationale:**
+  - Simpler deployment (no headless Chrome)
+  - Lower server resource usage
+  - Works offline
+- **Trade-offs:**
+  - User must "Print to PDF" manually (minor friction)
+  - Inconsistent output across browsers (minor)
+- **Files:** `lib/report.ts` generates HTML, browser handles PDF
+
+---
+
+## Current State
+
+### In Progress
+
+- [x] Hilfe-Seite mit DRK-Kontext
+- [x] Feedback-System mit Privacy-by-Design
+- [ ] Deployment auf HTTPS (Domain + SSL)
+
+### Planned
+
+- AI agent integration test (Henry checks feedback via heartbeat)
+- Markdown-to-HTML für Begründungsfelder (bessere PDF-Formatierung)
+- Dark Mode
+- Export as JSON (for power users)
+
+### Known Issues
+
+- **QR Codes können groß werden:** Bei vielen Begründungen (>500 Zeichen pro Feld) kann der QR Code schwer scannbar werden
+  - Workaround: Begründungen kurz halten
+  - Mögliche Lösung: QR-Fehlerkorrektur runtersetzen (L statt H)
+
+- **Mobile Safari localStorage:** Inkognito-Modus löscht localStorage beim Tab-Close
+  - Bekanntes Browser-Verhalten, keine Lösung
+  - User-Hinweis: Nicht im Inkognito-Modus verwenden
+
+---
+
+## Setup & Deployment
+
+### Local Development
 
 ```bash
-curl https://deine-instanz.de/api/auskunft
+git clone https://github.com/AFielen/auskunft.git
+cd auskunft
+npm install
+npm run dev
 ```
 
-Gibt zurück:
-- Alle Pflichtfelder mit Beschreibung
-- Alle Abschnitte mit Fragen
-- Pro Frage: `id`, `text`, `type`, `required`, `conditionalOn`, `allowedValues`
+**No environment variables needed** (privacy-first = no external services).
 
-## Report generieren
+### Deployment (VPS)
 
 ```bash
-curl -X POST https://deine-instanz.de/api/auskunft \
-  -H "Content-Type: application/json" \
-  -d '{ ... }'
+# On the server
+cd /opt/auskunft
+git pull
+docker compose up -d --build
 ```
 
-**Response:** HTML-Dokument (druckfertiger A4-Report mit DRK-Branding)
+**Port:** 3333 (mapped to container port 3000)
+
+### Feedback System Setup
+
+1. Visit `/hilfe` on your instance
+2. Copy the Instanz-ID (at bottom of page)
+3. Create `.env` in project root:
+   ```
+   DRK_INSTANCE_ID=78842d30-3f6e-4594-b6ce-17f8b80b354a
+   ```
+4. Restart container: `docker compose down && docker compose up -d`
+5. Feedback is stored in `/data/drk-feedback/` on host
+
+**Henry (AI agent) checks for feedback 2x daily via heartbeat.**
 
 ---
 
-## Pflichtfelder (JSON-Body)
+## Notes & Context
 
-| Feld | Typ | Beschreibung |
-|------|-----|--------------|
-| `name` | string | Vor- und Nachname der erklärenden Person |
-| `role` | string | Funktion (z.B. "Kreisgeschäftsführer", "Vorstand", "Prokurist") |
-| `gliederung` | string | DRK-Gliederung (z.B. "Kreisverband Städteregion Aachen e.V.") |
-| `reportTo` | string | Funktion des Aufsichtsorgans (z.B. "Präsident") |
-| `aufsichtName` | string | Name des/der Vorsitzenden des Aufsichtsorgans |
-| `geschaeftsjahr` | string | Das Geschäftsjahr (z.B. "2025") |
-| `ort` | string | Ort der Erklärung (z.B. "Würselen") |
-| `answers` | object | Antworten: `{ fragenId: "ja" \| "nein" \| "teilweise" \| number \| string }` |
-| `deviations` | object | Begründungen bei Abweichungen: `{ fragenId: "Erklärungstext" }` (optional) |
+- **Icons:** Inline SVG (no icon library to save bundle size)
+- **Fonts:** System fonts (-apple-system, Segoe UI) for speed
+- **DRK Colors:** `--drk: #e30613` (defined in `globals.css`)
+- **No Analytics:** Intentional - privacy-first design
+- **API for Agents:** See `AGENT.md` in repo (separate doc for AI integration)
+- **Presentation:** Introduced at DRK Landesversammlung 2025-04-09
+- **Target Users:** ~200 DRK Kreisverbände in NRW
 
 ---
 
-## Fragen-Übersicht
-
-### 1. Geschäftsführung & Interessenkonflikte
-
-| ID | Typ | Frage |
-|----|-----|-------|
-| `gf_keine_aenderungen` | confirmation | Vertragsänderungen mit Aufsichtsorgan abgestimmt |
-| `gf_keine_interessen` | confirmation | Keine beeinträchtigenden persönlichen Interessen |
-| `gf_konflikte_gemeldet` | confirmation | Interessenkonflikte gemeldet |
-| `gf_keine_verwandten` | confirmation | Keine verwandten Personen in Gliederung tätig |
-| `gf_keine_geschenke_angenommen` | confirmation | Keine Geschenke von Dritten angenommen |
-| `gf_keine_geschenke_gewaehrt` | confirmation | Keine Geschenke an Dritte gewährt |
-
-### 2. Sitzungen & Beschlussfassungen
-
-| ID | Typ | Frage |
-|----|-----|-------|
-| `sitzungen_gesamt` | **number** | Anzahl Sitzungen des Aufsichtsorgans |
-| `sitzungen_teilnahme` | **number** | Davon teilgenommen |
-| `sitzungen_weitere` | text | Weitere Gremien (optional) |
-
-### 3. Zustimmungspflichtige Rechtsgeschäfte
-
-| ID | Typ | Frage |
-|----|-----|-------|
-| `rg_grundstuecke` | confirmation | Grundstücke nur mit Zustimmung |
-| `rg_darlehen` | confirmation | Darlehen nur mit Zustimmung |
-| `rg_darlehen_dritte` | confirmation | Darlehen an Dritte nur mit Zustimmung |
-| `rg_buergschaften` | confirmation | Bürgschaften nur mit Zustimmung |
-| `rg_beteiligungen` | confirmation | Beteiligungen nur mit Zustimmung |
-
-### 4. Arbeitgeberstellung
-
-| ID | Typ | Bedingung | Frage |
-|----|-----|-----------|-------|
-| `ag_mindestlohn` | confirmation | | Mindestlohn eingehalten |
-| `ag_mutterschutz` | confirmation | | Mutterschutz eingehalten |
-| `ag_jugendschutz` | confirmation | | Jugendarbeitsschutz eingehalten |
-| `ag_schwerbehinderte` | confirmation | | Schwerbehindertenrecht eingehalten |
-| `ag_auslaender` | confirmation | | Beschäftigung Ausländer eingehalten |
-| `ag_betriebsrat_existiert` | confirmation | | Betriebsrat vorhanden |
-| `ag_br_wahlen` | confirmation | nur wenn `ag_betriebsrat_existiert` = "ja" | BR-Wahlen unbeeinflusst |
-| `ag_br_monatsgespraeche` | confirmation | nur wenn `ag_betriebsrat_existiert` = "ja" | Monatsgespräche durchgeführt |
-| `ag_br_stoerungsfrei` | confirmation | nur wenn `ag_betriebsrat_existiert` = "ja" | BR-Tätigkeit ungehindert |
-| `ag_br_pflichten` | confirmation | nur wenn `ag_betriebsrat_existiert` = "ja" | BetrVG-Pflichten erfüllt |
-| `ag_beschlussverfahren` | **number** | | Beschlussverfahren Arbeitsgericht |
-
-### 5. Finanzwesen
-
-| ID | Typ | Frage |
-|----|-----|-------|
-| `fin_satzungsgemaess` | confirmation | Mittel satzungsgemäß verwendet |
-| `fin_haushaltsplan` | confirmation | Haushaltsplan eingehalten |
-| `fin_buchfuehrung` | confirmation | Buchführung ordnungsgemäß |
-| `fin_vier_augen` | confirmation | Vier-Augen-Prinzip bei >10 TEUR |
-| `fin_berichtspflichten` | confirmation | Berichtspflichten eingehalten |
-| `fin_controlling` | confirmation | Controlling-Frühwarnsystem vorhanden |
-| `fin_versicherung` | confirmation | D&O-Versicherung vorhanden |
-| `fin_jahresabschluss` | confirmation | Jahresabschluss geprüft und vorgelegt |
-
-### 6. Revision & Compliance
-
-| ID | Typ | Frage |
-|----|-----|-------|
-| `rev_pruefung` | confirmation | Revisionsprüfung durchgeführt |
-| `rev_hinweisgebersystem` | confirmation | Hinweisgebersystem vorhanden |
-| `rev_hinweise_anzahl` | **number** | Anzahl eingegangener Hinweise |
-
----
-
-## Antwort-Typen
-
-| Typ | Erlaubte Werte | Hinweis |
-|-----|----------------|---------|
-| `confirmation` | `"ja"`, `"nein"`, `"teilweise"` | Bei "nein"/"teilweise" → Begründung in `deviations` empfohlen |
-| `number` | Ganzzahl ≥ 0 | z.B. Sitzungsanzahl |
-| `text` | Freitext | z.B. weitere Gremien |
-
-## Bedingte Felder
-
-Fragen mit `conditionalOn` werden nur ausgewertet, wenn die referenzierte Frage den angegebenen Wert hat. Beispiel: Die Betriebsrats-Fragen (`ag_br_*`) werden nur relevant wenn `ag_betriebsrat_existiert` = `"ja"`.
-
----
-
-## Beispiel: Alles in Ordnung
-
-```json
-{
-  "name": "Axel Fielen",
-  "role": "Kreisgeschäftsführer",
-  "gliederung": "DRK Kreisverband Städteregion Aachen e.V.",
-  "reportTo": "Präsident",
-  "aufsichtName": "Dr. Max Mustermann",
-  "geschaeftsjahr": "2025",
-  "ort": "Würselen",
-  "answers": {
-    "gf_keine_aenderungen": "ja",
-    "gf_keine_interessen": "ja",
-    "gf_konflikte_gemeldet": "ja",
-    "gf_keine_verwandten": "ja",
-    "gf_keine_geschenke_angenommen": "ja",
-    "gf_keine_geschenke_gewaehrt": "ja",
-    "sitzungen_gesamt": 12,
-    "sitzungen_teilnahme": 12,
-    "rg_grundstuecke": "ja",
-    "rg_darlehen": "ja",
-    "rg_darlehen_dritte": "ja",
-    "rg_buergschaften": "ja",
-    "rg_beteiligungen": "ja",
-    "ag_mindestlohn": "ja",
-    "ag_mutterschutz": "ja",
-    "ag_jugendschutz": "ja",
-    "ag_schwerbehinderte": "ja",
-    "ag_auslaender": "ja",
-    "ag_betriebsrat_existiert": "ja",
-    "ag_br_wahlen": "ja",
-    "ag_br_monatsgespraeche": "ja",
-    "ag_br_stoerungsfrei": "ja",
-    "ag_br_pflichten": "ja",
-    "ag_beschlussverfahren": 0,
-    "fin_satzungsgemaess": "ja",
-    "fin_haushaltsplan": "ja",
-    "fin_buchfuehrung": "ja",
-    "fin_vier_augen": "ja",
-    "fin_berichtspflichten": "ja",
-    "fin_controlling": "ja",
-    "fin_versicherung": "ja",
-    "fin_jahresabschluss": "ja",
-    "rev_pruefung": "ja",
-    "rev_hinweisgebersystem": "ja",
-    "rev_hinweise_anzahl": 0
-  },
-  "deviations": {}
-}
-```
-
-## Beispiel: Mit Abweichung
-
-```json
-{
-  "...": "...",
-  "answers": {
-    "gf_keine_verwandten": "teilweise",
-    "...": "..."
-  },
-  "deviations": {
-    "gf_keine_verwandten": "Ehepartner ist ehrenamtlich im Ortsverein Würselen als Sanitätshelfer tätig. Dem Aufsichtsorgan bekannt und genehmigt."
-  }
-}
-```
-
----
-
-## Tipps für KI-Assistenten
-
-1. **"Alles nach Plan"** = Alle confirmation-Fragen auf `"ja"`, alle number-Fragen auf `0` (außer Sitzungen)
-2. **Sitzungen immer nachfragen** — diese Zahlen sind jedes Jahr anders
-3. **Betriebsrat-Fragen** nur stellen wenn `ag_betriebsrat_existiert` = `"ja"`
-4. **Fragen clustern** statt einzeln stellen — spart Roundtrips
-5. **Begründungen** bei Abweichungen sollten konkret und nachvollziehbar sein
+_Last updated: 2025-02-19 by Henry (AI)_
