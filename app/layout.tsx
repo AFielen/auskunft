@@ -67,8 +67,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             made with{" "}
             <span style={{ color: "var(--drk)" }}>&#10084;</span>
             {" "}for{" "}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--drk)" xmlns="http://www.w3.org/2000/svg">
-              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" />
+            <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 2h6v7h7v6h-7v7H9v-7H2V9h7V2z" fill="#e30613" />
             </svg>
           </div>
         </footer>
