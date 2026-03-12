@@ -1,0 +1,7 @@
+.git
+.next
+node_modules
+*.md
+LICENSE
+.gitattributes
+.env*
