@@ -158,13 +158,15 @@ Die Template-Variante mit 3 Stages erlaubt besseres Docker-Layer-Caching.
 
 | Aspekt | Template | Auskunft |
 |---|---|---|
-| Service-Name | `app` | `selbstauskunft` |
-| Port-Mapping | `3000:3000` | `3333:3000` |
-| container_name | nicht gesetzt | `drk-selbstauskunft` |
+| Service-Name | `app` | `auskunft` |
+| Port-Mapping | `3000:3000` | Kein Port-Expose (Caddy reverse proxy via caddy-net) |
+| container_name | nicht gesetzt | `auskunft` |
 | environment | nicht gesetzt | `NODE_ENV`, `DRK_INSTANCE_ID` |
 | volumes | nicht gesetzt | `/data/drk-feedback` |
+| networks | nicht gesetzt | `caddy-net` (external) |
+| healthcheck | nicht gesetzt | wget --spider auf localhost:3000 |
 
-Port-Mapping und Volumes sind app-spezifisch und vertretbar. Template zeigt nur die Basisstruktur.
+Netzwerk und Volumes sind app-spezifisch und vertretbar. Dev-Profil (`--profile dev`) exponiert Port 3333 für lokale Entwicklung.
 
 ### Hauptseiten-Layout
 
