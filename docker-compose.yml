@@ -1,7 +1,32 @@
 services:
-  selbstauskunft:
-    build: .
-    container_name: drk-selbstauskunft
+  auskunft:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-https://drk-selfaudit.de}
+    container_name: auskunft
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DRK_INSTANCE_ID=${DRK_INSTANCE_ID:-}
+    volumes:
+      - /data/drk-feedback:/data/drk-feedback
+    networks:
+      - caddy-net
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # Local development: docker compose --profile dev up
+  auskunft-dev:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3333}
+    container_name: auskunft-dev
     restart: unless-stopped
     ports:
       - "3333:3000"
@@ -10,3 +35,14 @@ services:
       - DRK_INSTANCE_ID=${DRK_INSTANCE_ID:-}
     volumes:
       - /data/drk-feedback:/data/drk-feedback
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    profiles: ["dev"]
+
+networks:
+  caddy-net:
+    external: true

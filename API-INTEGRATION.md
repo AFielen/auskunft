@@ -14,7 +14,7 @@ Dieses Dokument beschreibt, wie ein KI-Assistent die DRK Selbstauskunft programm
 ## Schema abrufen
 
 ```bash
-curl https://deine-instanz.de/api/auskunft
+curl https://drk-selfaudit.de/api/auskunft
 ```
 
 Gibt zurück:
@@ -25,7 +25,7 @@ Gibt zurück:
 ## Report generieren
 
 ```bash
-curl -X POST https://deine-instanz.de/api/auskunft \
+curl -X POST https://drk-selfaudit.de/api/auskunft \
   -H "Content-Type: application/json" \
   -d '{ ... }'
 ```

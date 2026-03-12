@@ -28,11 +28,72 @@ Digitale Compliance-Erklärung für Vorstände, Geschäftsführer und Prokuriste
 
 ## Deployment
 
+**Domain:** drk-selfaudit.de
+
 Diese App nutzt **Variante B: Server (Node.js Backend)** wegen API-Routes (`/api/auskunft`, `/api/feedback`).
 
 - `output: 'standalone'` in `next.config.ts`
 - Docker Multi-Stage Build (node:22-alpine)
-- docker-compose mit Port 3333:3000
+- Container läuft intern auf Port 3000, **kein Port-Expose** nach außen
+- Erreichbar nur über Docker-Netzwerk `caddy-net` (external)
+- SSL-Terminierung über **Caddy Reverse Proxy** (separater Container, nicht Teil dieses Projekts)
+
+### Architektur
+
+```
+Internet → Caddy (SSL, caddy-net) → auskunft:3000 (caddy-net)
+```
+
+### Docker-Netzwerk
+
+Das Netzwerk `caddy-net` wird extern angelegt und von mehreren Containern geteilt:
+```bash
+docker network create caddy-net
+```
+
+In `docker-compose.yml` referenziert als `external: true`.
+
+### Caddy-Konfiguration (Referenz, nicht in diesem Projekt)
+
+```
+drk-selfaudit.de {
+    reverse_proxy auskunft:3000
+}
+```
+
+### Umgebungsvariablen
+
+| Variable | Zweck | Build/Runtime |
+|---|---|---|
+| `NEXT_PUBLIC_APP_URL` | App-URL (wird im Build inlined) | Build-time (ARG → ENV) |
+| `DRK_INSTANCE_ID` | Feedback-System Privacy-Filter | Runtime |
+
+`NEXT_PUBLIC_APP_URL` wird als Docker `ARG` übergeben und im Build-Schritt als `ENV` gesetzt,
+damit Next.js die Variable korrekt inlinet.
+
+### Deployment auf dem VPS
+
+```bash
+cd /opt/auskunft
+git pull
+cp .env.example .env  # Werte anpassen
+docker compose up -d --build
+```
+
+### Lokale Entwicklung (mit Docker)
+
+```bash
+docker compose --profile dev up -d --build
+# → http://localhost:3333
+```
+
+### Lokale Entwicklung (ohne Docker)
+
+```bash
+npm install
+npm run dev
+# → http://localhost:3000
+```
 
 ---
 
@@ -177,6 +238,7 @@ auskunft/
 - **QR-Code im PDF:** Komprimierter Formular-State (lz-string) für Vorausfüllung nächstes Jahr
 - **REST-API:** `/api/auskunft` für KI-Agenten-Integration (siehe API-INTEGRATION.md)
 - **Feedback-System:** Instance-ID-basiert, nur konfigurierte Instanz speichert Daten
+- **Keine hardcodierten Domains:** App-URL wird über `NEXT_PUBLIC_APP_URL` konfiguriert (Build-time)
 
 ---
 
