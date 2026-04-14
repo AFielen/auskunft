@@ -1,12 +1,32 @@
 services:
-  selbstauskunft:
-    build: .
-    container_name: drk-selbstauskunft
+  auskunft:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://drk-selbstauskunft.de}
+    container_name: auskunft
     restart: unless-stopped
-    ports:
-      - "3333:3000"
+    networks:
+      - caddy-net
     environment:
       - NODE_ENV=production
-      - DRK_INSTANCE_ID=${DRK_INSTANCE_ID:-}
-    volumes:
-      - /data/drk-feedback:/data/drk-feedback
+      - HOSTNAME=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+
+  auskunft-dev:
+    build: .
+    container_name: auskunft-dev
+    ports:
+      - "3333:3000"
+    restart: unless-stopped
+    profiles:
+      - dev
+
+networks:
+  caddy-net:
+    external: true
