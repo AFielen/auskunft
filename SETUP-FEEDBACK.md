@@ -63,7 +63,7 @@ cat /data/drk-feedback/DATEINAME.json
 
 **Lösung:**
 1. Checke, ob die Instanz-ID korrekt in `.env` steht
-2. Prüfe Docker-Logs: `docker logs drk-selbstauskunft`
+2. Prüfe Docker-Logs: `docker logs auskunft`
 3. Stelle sicher, dass `/data/drk-feedback` existiert und beschreibbar ist
 
 **Problem:** "Permission denied" beim Schreiben

@@ -52,15 +52,17 @@ Dieses Tool digitalisiert den Prozess — **Schritt für Schritt, direkt auf dem
 git clone https://github.com/AFielen/auskunft.git
 cd auskunft
 
-# Optional: .env für Feedback-System konfigurieren
+# .env konfigurieren
 cp .env.example .env
-# Öffne die App, gehe zu /hilfe, kopiere deine Instanz-ID
-# Trage sie in .env ein: DRK_INSTANCE_ID=abc-def-...
+# NEXT_PUBLIC_APP_URL und ggf. DRK_INSTANCE_ID setzen
 
+# Produktion (hinter Caddy Reverse Proxy, kein Port-Expose):
+docker network create caddy-net  # einmalig
 docker compose up -d --build
-```
 
-Die App läuft dann auf **http://localhost:3000**.
+# Lokal entwickeln (Port 3333):
+docker compose --profile dev up -d --build
+```
 
 ### Lokal entwickeln
 

@@ -19,7 +19,7 @@ Digitale Compliance-Erklärung für Vorstände, Geschäftsführer und Prokuriste
 
 ## Quick Links
 
-- **Live:** (wird noch konfiguriert - läuft auf VPS)
+- **Live:** https://drk-selfaudit.de
 - **Repo:** https://github.com/AFielen/auskunft/
 - **Local Dev:** http://localhost:3333
 
@@ -40,7 +40,10 @@ Digitale Compliance-Erklärung für Vorstände, Geschäftsführer und Prokuriste
 - File Storage: `/data/drk-feedback/` (VPS host)
 
 ### Infrastructure
-- Hosting: Docker on Hostinger VPS
+- Hosting: Docker on VPS behind Caddy reverse proxy
+- SSL: Caddy (automatic HTTPS via Let's Encrypt)
+- Domain: drk-selfaudit.de
+- Network: Docker caddy-net (external)
 - Deployment: Manual via git pull + docker compose rebuild
 - Monitoring: None yet
 
@@ -196,7 +199,7 @@ auskunft/
 
 ### In Progress
 
-- [ ] Deployment auf HTTPS (Domain + SSL)
+- [ ] DNS + Caddy-Konfiguration für drk-selfaudit.de
 
 ### Planned
 
@@ -228,18 +231,38 @@ npm install
 npm run dev
 ```
 
-**No environment variables needed** (privacy-first = no external services).
+**Environment variables:** See `.env.example`. Only `NEXT_PUBLIC_APP_URL` (for build) and `DRK_INSTANCE_ID` (optional, for feedback).
 
-### Deployment (VPS)
+### Deployment (VPS with Caddy)
 
 ```bash
 # On the server
 cd /opt/auskunft
+
+# Create external Docker network (once)
+docker network create caddy-net
+
+# Deploy
 git pull
+cp .env.example .env  # Edit with your values
 docker compose up -d --build
 ```
 
-**Port:** 3333 (mapped to container port 3000)
+The container runs internally on port 3000, not exposed to the host.
+Caddy reverse proxy (separate container in caddy-net) handles SSL and routing:
+```
+drk-selfaudit.de {
+    reverse_proxy auskunft:3000
+}
+```
+
+### Local Development (with Docker)
+
+```bash
+docker compose --profile dev up -d --build
+```
+
+Exposes port 3333 on localhost.
 
 ### Feedback System Setup
 
@@ -269,4 +292,4 @@ docker compose up -d --build
 
 ---
 
-_Last updated: 2026-02-19 by Claude (AI)_
+_Last updated: 2026-03-12 by Claude (AI)_
